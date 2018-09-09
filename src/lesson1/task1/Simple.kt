@@ -92,18 +92,7 @@ fun trackLength(x1: Double, y1: Double, x2: Double, y2: Double): Double = sqrt(s
  * Пользователь задает целое число, большее 100 (например, 3801).
  * Определить третью цифру справа в этом числе (в данном случае 8).
  */
-fun thirdDigit(number: Int): Int {
-    var num=number
-    if (number>999) {
-    while (num > 99) {
-        num=num/10
-    }
-    num=num%10}
-    else {
-        num=num/100
-    }
-    return (num)
-}
+fun thirdDigit(number: Int): Int = number % 1000 / 100
 
 /**
  * Простая
