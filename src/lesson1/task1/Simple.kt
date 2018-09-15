@@ -1,4 +1,5 @@
 @file:Suppress("UNUSED_PARAMETER")
+
 package lesson1.task1
 
 import java.lang.Math.pow
@@ -59,7 +60,7 @@ fun main(args: Array<String>) {
  * Пользователь задает время в часах, минутах и секундах, например, 8:20:35.
  * Рассчитать время в секундах, прошедшее с начала суток (30035 в данном случае).
  */
-fun seconds(hours: Int, minutes: Int, seconds: Int): Int = hours*3600+minutes*60+seconds
+fun seconds(hours: Int, minutes: Int, seconds: Int): Int = hours * 3600 + minutes * 60 + seconds
 
 /**
  * Тривиальная
@@ -69,7 +70,7 @@ fun seconds(hours: Int, minutes: Int, seconds: Int): Int = hours*3600+minutes*60
  * 1 сажень = 3 аршина = 48 вершков, 1 вершок = 4.445 см.
  */
 fun lengthInMeters(sagenes: Int, arshins: Int, vershoks: Int): Double =
-        4.445*(48*sagenes+16*arshins+vershoks)/100
+        4.445 * (48 * sagenes + 16 * arshins + vershoks) / 100
 
 /**
  * Тривиальная
@@ -78,8 +79,8 @@ fun lengthInMeters(sagenes: Int, arshins: Int, vershoks: Int): Double =
  * Вывести значение того же угла в радианах (например, 0.63256).
  */
 fun angleInRadian(grad: Int, min: Int, sec: Int): Double {
-    val k :Double = PI/180.0
-    return (grad+min/60.0+sec/3600.0)*k
+    val k: Double = PI / 180.0
+    return (grad + min / 60.0 + sec / 3600.0) * k
 }
 
 /**
@@ -88,7 +89,8 @@ fun angleInRadian(grad: Int, min: Int, sec: Int): Double {
  * Найти длину отрезка, соединяющего точки на плоскости с координатами (x1, y1) и (x2, y2).
  * Например, расстояние между (3, 0) и (0, 4) равно 5
  */
-fun trackLength(x1: Double, y1: Double, x2: Double, y2: Double): Double = sqrt(sqr(x1-x2)+sqr(y1-y2))
+fun trackLength(x1: Double, y1: Double, x2: Double, y2: Double): Double =
+        sqrt(sqr(x1 - x2) + sqr(y1 - y2))
 
 /**
  * Простая
@@ -97,36 +99,35 @@ fun trackLength(x1: Double, y1: Double, x2: Double, y2: Double): Double = sqrt(s
  * Определить третью цифру справа в этом числе (в данном случае 8).
  */
 fun thirdDigit(number: Int): Int =
-        number /100 % 10
+        number / 100 % 10
 
 
-    /**
-     * Простая
-     *
-     * Поезд вышел со станции отправления в h1 часов m1 минут (например в 9:25) и
-     * прибыл на станцию назначения в h2 часов m2 минут того же дня (например в 13:01).
-     * Определите время поезда в пути в минутах (в данном случае 216).
-     */
-    fun travelMinutes(hoursDepart: Int, minutesDepart: Int, hoursArrive: Int, minutesArrive: Int): Int =
-            hoursArrive*60+minutesArrive-hoursDepart*60-minutesDepart
+/**
+ * Простая
+ *
+ * Поезд вышел со станции отправления в h1 часов m1 минут (например в 9:25) и
+ * прибыл на станцию назначения в h2 часов m2 минут того же дня (например в 13:01).
+ * Определите время поезда в пути в минутах (в данном случае 216).
+ */
+fun travelMinutes(hoursDepart: Int, minutesDepart: Int, hoursArrive: Int, minutesArrive: Int): Int =
+        hoursArrive * 60 + minutesArrive - hoursDepart * 60 - minutesDepart
 
-    /**
-     * Простая
-     *
-     * Человек положил в банк сумму в s рублей под p% годовых (проценты начисляются в конце года).
-     * Сколько денег будет на счету через 3 года (с учётом сложных процентов)?
-     * Например, 100 рублей под 10% годовых превратятся в 133.1 рубля
-     */
-    fun accountInThreeYears(initial: Int, percent: Int): Double {
-        return initial*(1+percent/100.0).pow(3)
-    }
+/**
+ * Простая
+ *
+ * Человек положил в банк сумму в s рублей под p% годовых (проценты начисляются в конце года).
+ * Сколько денег будет на счету через 3 года (с учётом сложных процентов)?
+ * Например, 100 рублей под 10% годовых превратятся в 133.1 рубля
+ */
+fun accountInThreeYears(initial: Int, percent: Int): Double =
+        initial * (1 + percent / 100.0).pow(3)
 
-    /**
-     * Простая
-     *
-     * Пользователь задает целое трехзначное число (например, 478).
-     * Необходимо вывести число, полученное из заданного перестановкой цифр в обратном порядке (например, 874).
-     */
-    fun numberRevert(number: Int): Int {
-        return 100 * (number % 10) + 10 * ((number / 10) % 10) + number / 100
-    }
+/**
+ * Простая
+ *
+ * Пользователь задает целое трехзначное число (например, 478).
+ * Необходимо вывести число, полученное из заданного перестановкой цифр в обратном порядке (например, 874).
+ */
+fun numberRevert(number: Int): Int =
+        100 * (number % 10) + 10 * ((number / 10) % 10) + number / 100
+
