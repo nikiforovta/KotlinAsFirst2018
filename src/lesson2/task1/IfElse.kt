@@ -66,13 +66,12 @@ fun minBiRoot(a: Double, b: Double, c: Double): Double {
  * вернуть строку вида: «21 год», «32 года», «12 лет».
  */
 fun ageDescription(age: Int): String {
-    if (age % 100 in 10..20) return "$age лет"
+    return if (age % 100 in 10..20) "$age лет"
     else {
         when (age % 10) {
-            1 -> return "$age год"
-            in 2..4 -> return "$age года"
-            in 5..9 -> return "$age лет"
-            0 -> return "$age лет"
+            1 -> "$age год"
+            in 2..4 -> "$age года"
+            else -> "$age лет"
         }
     }
     return "Outside the limits"
@@ -147,26 +146,10 @@ fun rookOrBishopThreatens(kingX: Int, kingY: Int,
  */
 fun triangleKind(a: Double, b: Double, c: Double): Int {
     if (a + b > c && a + c > b && b + c > a) {
-        if (a >= b && a >= c) {
-            when {
-                (sqr(a) > sqr(b) + sqr(c)) -> return 2
-                (sqr(a) < sqr(b) + sqr(c)) -> return 0
-                (sqr(a) == sqr(b) + sqr(c)) -> return 1
-            }
-        }
-        if (b >= a && b >= c) {
-            when {
-                (sqr(b) > sqr(a) + sqr(c)) -> return 2
-                (sqr(b) < sqr(a) + sqr(c)) -> return 0
-                (sqr(b) == sqr(a) + sqr(c)) -> return 1
-            }
-        }
-        if (c >= a && c >= b) {
-            when {
-                (sqr(c) > sqr(a) + sqr(b)) -> return 2
-                (sqr(c) > sqr(a) + sqr(b)) -> return 0
-                (sqr(c) == sqr(a) + sqr(b)) -> return 1
-            }
+        return when {
+            (sqr(maxOf(a, b, c)) > sqr(minOf(a, b, c)) + sqr(a + b + c - maxOf(a, b, c) - minOf(a, b, c))) -> 2
+            (sqr(maxOf(a, b, c)) < sqr(minOf(a, b, c)) + sqr(a + b + c - maxOf(a, b, c) - minOf(a, b, c))) -> 0
+            else -> 1
         }
     }
     return -1
