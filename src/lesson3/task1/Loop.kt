@@ -77,7 +77,7 @@ fun digitNumber(n: Int): Int {
     do {
         dig++
         num /= 10
-    } while (num > 0)
+    } while (num != 0)
     return dig
 }
 
@@ -200,13 +200,13 @@ fun collatzSteps(x: Int): Int {
  * Нужную точность считать достигнутой, если очередной член ряда меньше eps по модулю
  */
 fun sin(x: Double, eps: Double): Double {
-    val xn = x % (PI * 2)
+    val xn = abs(x % (PI * 2))
     var res = xn
-    for (i in 1..100) {
+    for (i in 1..10000) {
         if (xn.pow(2 * i + 1) / factorial(2 * i + 1) < eps) break
         res += (-1.0).pow(i) * xn.pow(2 * i + 1) / factorial(2 * i + 1)
     }
-    return res
+    return if (x > 0) res else res * -1
 }
 
 /**
