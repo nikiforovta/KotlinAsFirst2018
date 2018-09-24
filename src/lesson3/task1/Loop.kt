@@ -2,11 +2,8 @@
 
 package lesson3.task1
 
-import lesson1.task1.numberRevert
 import lesson1.task1.sqr
-import java.lang.Math.PI
-import java.lang.Math.pow
-import kotlin.math.*
+import java.lang.Math.*
 
 /**
  * Пример
@@ -104,6 +101,7 @@ fun lcd(m: Int, n: Int): Int {
     while (m1 != n1) if (m1 > n1) m1 -= n1 else n1 -= m1
     return m1
 }
+
 /**
  * Простая
  *
@@ -134,14 +132,7 @@ fun minDivisor(n: Int): Int {
  *
  * Для заданного числа n > 1 найти максимальный делитель, меньший n
  */
-fun maxDivisor(n: Int): Int {
-    var i = 0
-    for (k in n - 1 downTo 1) if (n % k == 0) {
-        i = k
-        break
-    }
-    return i
-}
+fun maxDivisor(n: Int): Int = n / minDivisor(n)
 
 
 /**
@@ -162,7 +153,7 @@ fun isCoPrime(m: Int, n: Int): Boolean =
  * Например, для интервала 21..28 21 <= 5*5 <= 28, а для интервала 51..61 квадрата не существует.
  */
 fun squareBetweenExists(m: Int, n: Int): Boolean {
-    for (i in m..n) if (sqrt(i.toDouble()) % 1 == 0.0) return true
+    for (i in m..n) if (floor(sqrt(i.toDouble())) == ceil(sqrt(i.toDouble()))) return true
     return false
 }
 
@@ -203,8 +194,8 @@ fun sin(x: Double, eps: Double): Double {
     val xn = abs(x % (PI * 2))
     var res = xn
     for (i in 1..10000) {
-        if (xn.pow(2 * i + 1) / factorial(2 * i + 1) < eps) break
-        res += (-1.0).pow(i) * xn.pow(2 * i + 1) / factorial(2 * i + 1)
+        if (pow(xn, (2 * i + 1).toDouble()) / factorial(2 * i + 1) < eps) break
+        res += pow(-1.0, i.toDouble()) * pow(xn, (2 * i + 1).toDouble()) / factorial(2 * i + 1)
     }
     return if (x > 0) res else res * -1
 }
@@ -220,8 +211,8 @@ fun cos(x: Double, eps: Double): Double {
     val xn = x % (2 * PI)
     var res = 1.0
     for (i in 1..1000) {
-        if (xn.pow(2 * i) / factorial(2 * i) < eps) break
-        res += (-1.0).pow(i.toDouble()) * xn.pow(2 * i) / factorial(2 * i)
+        if (pow(xn, (2 * i).toDouble()) / factorial(2 * i) < eps) break
+        res += pow(-1.0, i.toDouble()) * pow(xn, (2 * i).toDouble()) / factorial(2 * i)
     }
     return res
 }
@@ -275,6 +266,18 @@ fun hasDifferentDigits(n: Int): Boolean =
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
+
+
+fun sequenceCheck(k: Int, n: Int, seq: Int): Int {
+    var k1 = k
+    var seq1 = seq
+    while (k1 != n) {
+        seq1 /= 10
+        k1--
+    }
+    return seq1 % 10
+}
+
 fun squareSequenceDigit(n: Int): Int {
     var sqrr: Int
     var k = 0
@@ -284,11 +287,7 @@ fun squareSequenceDigit(n: Int): Int {
         k += digitNumber(sqr(i))
         i++
     } while (k < n)
-    while (k != n) {
-        sqrr /= 10
-        k--
-    }
-    return sqrr % 10
+    return sequenceCheck(k, n, sqrr)
 }
 
 /**
@@ -309,9 +308,5 @@ fun fibSequenceDigit(n: Int): Int {
         k += digitNumber(fib(i))
         i++
     } while (k < n)
-    while (k != n) {
-        fibr /= 10
-        k--
-    }
-    return fibr % 10
+    return sequenceCheck(k, n, fibr)
 }
