@@ -535,7 +535,7 @@ fun russian(n: Int): String {
             }
         }
         if (k == 4) {
-            if (digitNumber(n) == 6 && nc / pow(10.0, (k - 1).toDouble()).toInt() !in 11..19 && nc / pow(10.0, k.toDouble()).toInt() !in 1..9) rn += " тысяч"
+            if (nc / pow(10.0, (k - 1).toDouble()).toInt() % 10 == 0) rn += " тысяч"
             if (nc / pow(10.0, (k - 1).toDouble()).toInt() !in 11..19 && nc / pow(10.0, k.toDouble()).toInt() != 1) when (na / pow(10.0, (k - 1).toDouble()).toInt()) {
                 1 -> rn += " одна тысяча"
                 2 -> rn += " две тысячи"
