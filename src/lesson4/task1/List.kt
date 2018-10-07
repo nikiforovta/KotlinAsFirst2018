@@ -2,6 +2,8 @@
 
 package lesson4.task1
 
+import javafx.beans.binding.Bindings.isNotEmpty
+import jdk.nashorn.internal.objects.NativeArray.indexOf
 import lesson1.task1.discriminant
 import lesson1.task1.sqr
 import lesson3.task1.digitCountInNumber
@@ -9,6 +11,7 @@ import lesson3.task1.digitNumber
 import lesson3.task1.isPrime
 import java.lang.Math.pow
 import java.util.Collections.reverse
+import java.util.Collections.swap
 import kotlin.math.sqrt
 
 /**
@@ -121,14 +124,9 @@ fun buildSumExample(list: List<Int>) = list.joinToString(separator = " + ", post
  * по формуле abs = sqrt(a1^2 + a2^2 + ... + aN^2).
  * Модуль пустого вектора считать равным 0.0.
  */
-fun sum(a: List<Double>): Double {
-    var k = 0.0
-    for (i in 0 until a.size) k += a[i]
-    return k
-}
 
 fun abs(v: List<Double>): Double =
-        sqrt(sum(v.map { sqr(it) }))
+        sqrt((v.map { sqr(it) }).sum())
 
 /**
  * Простая
@@ -136,7 +134,7 @@ fun abs(v: List<Double>): Double =
  * Рассчитать среднее арифметическое элементов списка list. Вернуть 0.0, если список пуст
  */
 fun mean(list: List<Double>): Double =
-        if (list.isEmpty()) 0.0 else (sum(list) / list.size)
+        if (list.isEmpty()) 0.0 else (list.sum() / list.size)
 
 /**
  * Средняя
@@ -148,7 +146,7 @@ fun mean(list: List<Double>): Double =
  */
 fun center(list: MutableList<Double>): MutableList<Double> {
     val k = mean(list)
-    if (list.isNotEmpty()) for (i in 0 until list.size) list[i] = list[i] - k
+    list.replaceAll { t -> t - k }
     return list
 }
 
@@ -159,11 +157,8 @@ fun center(list: MutableList<Double>): MutableList<Double> {
  * представленные в виде списков a и b. Скалярное произведение считать по формуле:
  * C = a1b1 + a2b2 + ... + aNbN. Произведение пустых векторов считать равным 0.0.
  */
-fun times(a: List<Double>, b: List<Double>): Double {
-    var c = 0.0
-    if (a.isNotEmpty()) for (i in 0 until a.size) c += a[i] * b[i]
-    return c
-}
+fun times(a: List<Double>, b: List<Double>): Double =
+        (a.map { t -> t * b[a.indexOf(t)] }).sum()
 
 /**
  * Средняя
@@ -173,11 +168,8 @@ fun times(a: List<Double>, b: List<Double>): Double {
  * Коэффициенты многочлена заданы списком p: (p0, p1, p2, p3, ..., pN).
  * Значение пустого многочлена равно 0.0 при любом x.
  */
-fun polynom(p: List<Double>, x: Double): Double {
-    var result = 0.0
-    if (p.isNotEmpty()) for (i in 0 until p.size) result += p[i] * pow(x, i.toDouble())
-    return result
-}
+fun polynom(p: List<Double>, x: Double): Double =
+        (p.map { t -> t * pow(x, p.indexOf(t).toDouble()) }).sum()
 
 /**
  * Средняя
@@ -193,9 +185,8 @@ fun accumulate(list: MutableList<Double>): MutableList<Double> {
     if (list.isNotEmpty()) {
         var sp = list[0]
         for (i in 1 until list.size) {
-            val c = list[i]
-            list[i] = list[i] + sp
-            sp += c
+            sp += list[i]
+            list[i] = sp
         }
     }
     return list
@@ -240,26 +231,16 @@ fun factorizeToString(n: Int): String =
  * Результат перевода вернуть в виде списка цифр в base-ичной системе от старшей к младшей,
  * например: n = 100, base = 4 -> (1, 2, 1, 0) или n = 250, base = 14 -> (1, 3, 12)
  */
-fun reverseInt(a: List<Int>): List<Int> {
-    val b: MutableList<Int> = a as MutableList<Int>
-    if (a.size > 1)
-        for (i in 0 until a.size / 2) {
-            val k = b[b.size - i - 1]
-            b[b.size - i - 1] = b[i]
-            b[i] = k
-        }
-    return b
-}
 
 fun convert(n: Int, base: Int): List<Int> {
     var n1 = n
     val res = mutableListOf<Int>()
     while (n1 >= base) {
-        res.add(n1 % base)
+        res.add(0, n1 % base)
         n1 /= base
     }
-    res.add(n1)
-    return reverseInt(res)
+    res.add(0, n1)
+    return res
 }
 
 /**
@@ -271,53 +252,12 @@ fun convert(n: Int, base: Int): List<Int> {
  * Например: n = 100, base = 4 -> 1210, n = 250, base = 14 -> 13c
  */
 fun intToString(i: Int): String = when (i) {
-    10 -> "a"
-    11 -> "b"
-    12 -> "c"
-    13 -> "d"
-    14 -> "e"
-    15 -> "f"
-    16 -> "g"
-    17 -> "h"
-    18 -> "i"
-    19 -> "j"
-    20 -> "k"
-    21 -> "l"
-    22 -> "m"
-    23 -> "n"
-    24 -> "o"
-    25 -> "p"
-    26 -> "q"
-    27 -> "r"
-    28 -> "s"
-    29 -> "t"
-    30 -> "u"
-    31 -> "v"
-    32 -> "w"
-    33 -> "x"
-    34 -> "y"
-    35 -> "z"
-    else -> "$i"
+    in 0..9 -> (i.toString())
+    else -> ((i + 87).toChar().toString())
 }
 
-fun convertToString(n: Int, base: Int): String {
-    val pres = convert(n, base)
-    val res = mutableListOf<String>()
-    if (pres.size > 1) {
-        for (i in 0 until pres.size) res.add(intToString(pres[i]))
-    } else {
-        res.add(intToString(pres[0]))
-    }
-    var kres = ""
-    if (res.size > 1) {
-        for (i in 0 until res.size) {
-            kres += res[i]
-        }
-    } else {
-        kres += res[0]
-    }
-    return kres
-}
+fun convertToString(n: Int, base: Int): String =
+        convert(n, base).joinToString(separator = "") { intToString(it) }
 
 /**
  * Средняя
@@ -326,15 +266,8 @@ fun convertToString(n: Int, base: Int): String {
  * из системы счисления с основанием base в десятичную.
  * Например: digits = (1, 3, 12), base = 14 -> 250
  */
-fun decimal(digits: List<Int>, base: Int): Int {
-    var res = 0
-    var i = 0
-    if (digits.isNotEmpty()) do {
-        res += digits[i] * pow(base.toDouble(), (digits.size - 1 - i).toDouble()).toInt()
-        i++
-    } while (i < digits.size)
-    return res
-}
+fun decimal(digits: List<Int>, base: Int): Int =
+        digits.foldRightIndexed(0) { i, element, acc -> acc + element * (pow(base.toDouble(), (digits.size - 1 - i).toDouble())).toInt() }
 
 /**
  * Сложная
@@ -345,56 +278,14 @@ fun decimal(digits: List<Int>, base: Int): Int {
  * 10 -> a, 11 -> b, 12 -> c и так далее.
  * Например: str = "13c", base = 14 -> 250
  */
-fun charToInt(ch: Char): Int {
-    return when (ch) {
-        '0' -> 0
-        '1' -> 1
-        '2' -> 2
-        '3' -> 3
-        '4' -> 4
-        '5' -> 5
-        '6' -> 6
-        '7' -> 7
-        '8' -> 8
-        '9' -> 9
-        'a' -> 10
-        'b' -> 11
-        'c' -> 12
-        'd' -> 13
-        'e' -> 14
-        'f' -> 15
-        'g' -> 16
-        'h' -> 17
-        'i' -> 18
-        'j' -> 19
-        'k' -> 20
-        'l' -> 21
-        'm' -> 22
-        'n' -> 23
-        'o' -> 24
-        'p' -> 25
-        'q' -> 26
-        'r' -> 27
-        's' -> 28
-        't' -> 29
-        'u' -> 30
-        'v' -> 31
-        'w' -> 32
-        'x' -> 33
-        'y' -> 34
-        else -> 35
-    }
+
+fun charToInt(i: Char): Int = when (i.toInt()) {
+    in 48..56 -> (i.toInt() - 48)
+    else -> ((i).toInt() - 87)
 }
 
-fun decimalFromString(str: String, base: Int): Int {
-    var res = 0
-    var i = 0
-    do {
-        res += (charToInt(str[i]) * pow(base.toDouble(), (str.length - 1 - i).toDouble())).toInt()
-        i++
-    } while (i < str.length)
-    return res
-}
+fun decimalFromString(str: String, base: Int): Int =
+        decimal((str.map { i -> (charToInt(i)) }), base)
 
 /**
  * Сложная
@@ -406,75 +297,21 @@ fun decimalFromString(str: String, base: Int): Int {
  */
 
 fun roman(n: Int): String {
+    val rom: List<String> = listOf("I", "X", "C", "V", "L", "D", "X", "C", "M")
     var nr = ""
     var ka = digitNumber(n)
     var na = n
     while (na != 0) {
-        if (ka == 6) when (na / pow(10.0, (ka - 1).toDouble()).toInt()) {
-            1 -> nr += "MMMMMMMMMMMMMMMMMMM"
-            2 -> nr += "MMMMMMMMMMMMMMMMMMMM"
-            3 -> nr += "MMMMMMMMMMMMMMMMMMMMM"
-            4 -> nr += "MMMMMMMMMMMMMMMMMMMMMM"
-            5 -> nr += "MMMMMMMMMMMMMMMMMMMMMMM"
-            6 -> nr += "MMMMMMMMMMMMMMMMMMMMMMMM"
-            7 -> nr += "MMMMMMMMMMMMMMMMMMMMMMMMM"
-            8 -> nr += "MMMMMMMMMMMMMMMMMMMMMMMMMM"
-            9 -> nr += "MMMMMMMMMMMMMMMMMMMMMMMMMMM"
-        }
-        if (ka == 5) when (na / pow(10.0, (ka - 1).toDouble()).toInt()) {
-            1 -> nr += "MMMMMMMMMM"
-            2 -> nr += "MMMMMMMMMMM"
-            3 -> nr += "MMMMMMMMMMMM"
-            4 -> nr += "MMMMMMMMMMMMM"
-            5 -> nr += "MMMMMMMMMMMMMM"
-            6 -> nr += "MMMMMMMMMMMMMMM"
-            7 -> nr += "MMMMMMMMMMMMMMMM"
-            8 -> nr += "MMMMMMMMMMMMMMMMM"
-            9 -> nr += "MMMMMMMMMMMMMMMMMM"
-        }
-        if (ka == 4) when (na / pow(10.0, (ka - 1).toDouble()).toInt()) {
-            1 -> nr += "M"
-            2 -> nr += "MM"
-            3 -> nr += "MMM"
-            4 -> nr += "MMMM"
-            5 -> nr += "MMMMM"
-            6 -> nr += "MMMMMM"
-            7 -> nr += "MMMMMMM"
-            8 -> nr += "MMMMMMMM"
-            9 -> nr += "MMMMMMMMM"
-        }
-        if (ka == 3) when (na / pow(10.0, (ka - 1).toDouble()).toInt()) {
-            1 -> nr += "C"
-            2 -> nr += "CC"
-            3 -> nr += "CCC"
-            4 -> nr += "CD"
-            5 -> nr += "D"
-            6 -> nr += "DC"
-            7 -> nr += "DCC"
-            8 -> nr += "DCCC"
-            9 -> nr += "CM"
-        }
-        if (ka == 2) when (na / pow(10.0, (ka - 1).toDouble()).toInt()) {
-            1 -> nr += "X"
-            2 -> nr += "XX"
-            3 -> nr += "XXX"
-            4 -> nr += "XL"
-            5 -> nr += "L"
-            6 -> nr += "LX"
-            7 -> nr += "LXX"
-            8 -> nr += "LXXX"
-            9 -> nr += "XC"
-        }
-        if (ka == 1) when (na / pow(10.0, (ka - 1).toDouble()).toInt()) {
-            1 -> nr += "I"
-            2 -> nr += "II"
-            3 -> nr += "III"
-            4 -> nr += "IV"
-            5 -> nr += "V"
-            6 -> nr += "VI"
-            7 -> nr += "VII"
-            8 -> nr += "VIII"
-            9 -> nr += "IX"
+        val m = na / pow(10.0, (ka - 1).toDouble()).toInt()
+        nr += if (ka >= 4) {
+            rom[8].repeat(ka % 4 + m)
+        } else {
+            when (m) {
+                in 1..3 -> rom[ka - 1].repeat(m)
+                4 -> rom[ka - 1] + rom[ka + 2]
+                in 5..8 -> rom[ka + 2] + rom[ka - 1].repeat(m - 5)
+                else -> rom[ka - 1] + rom[ka + 5]
+            }
         }
         ka--
         na %= pow(10.0, ka.toDouble()).toInt()
@@ -490,119 +327,33 @@ fun roman(n: Int): String {
  * 23964 = "двадцать три тысячи девятьсот шестьдесят четыре"
  */
 fun russian(n: Int): String {
+    val diglast = arrayOf("ноль", "один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять")
+    val digfirst = arrayOf("ноль", "одна", "две", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять")
+    val hund = arrayOf("", "сто", "двести", "триста", "четыреста", "пятьсот",
+            "шестьсот", "семьсот", "восемьсот", "девятьсот")
+    val tens = arrayOf("", "одиннадцать", "двенадцать", "тринадцать", "четырнадцать", "пятнадцать",
+            "шестнадцать", "семнадцать", "восемнадцать", "девятнадцать", "двадцать")
+    val tens2 = arrayOf("", "десять", "двадцать", "тридцать", "сорок", "пятьдесят",
+            "шестьдесят", "семьдесят", "восемьдесят", "девяносто")
+    val forms = arrayOf("тысяча", "тысячи", "тысяч", "1")
     var rn = ""
-    var k = digitNumber(n)
-    var na = n
-    var nc = na
-    while (k != 0) {
-        if (k == 6) {
-            when (na / pow(10.0, (k - 1).toDouble()).toInt()) {
-                1 -> rn += "сто"
-                2 -> rn += "двести"
-                3 -> rn += "триста"
-                4 -> rn += "четыреста"
-                5 -> rn += "пятьсот"
-                6 -> rn += "шестьсот"
-                7 -> rn += "семьсот"
-                8 -> rn += "восемьсот"
-                9 -> rn += "девятьсот"
-            }
+    val nfirst = n / 1000
+    val nlast = n % 1000
+    if (nfirst != 0) {
+        if (nfirst / 100 != 0) rn += hund[nfirst / 100] + " "
+        if (nfirst % 100 in 11..19) rn += tens[nfirst % 10] + " "
+        else if (nfirst % 10 != 0) rn += tens2[nfirst / 10 % 10] + " " + digfirst[nfirst % 10] + " "
+        if (nfirst % 10 == 0 || nfirst % 100 in 11..19) rn += forms[2] + " "
+        else when (nfirst % 10) {
+            1 -> rn += forms[0] + " "
+            in 2..4 -> rn += forms[1] + " "
+            in 5..9 -> rn += forms[2] + " "
         }
-        if (k == 5) {
-            when (na / pow(10.0, (k - 2).toDouble()).toInt()) {
-                11 -> rn += " одиннадцать тысяч"
-                12 -> rn += " двенадцать тысяч"
-                13 -> rn += " тринадцать тысяч"
-                14 -> rn += " четырнадцать тысяч"
-                15 -> rn += " пятнадцать тысяч"
-                16 -> rn += " шестнадцать тысяч"
-                17 -> rn += " семнадцать тысяч"
-                18 -> rn += " восемнадцать тысяч"
-                19 -> rn += " девятнадцать тысяч"
-                else -> {
-                    when (na / pow(10.0, (k - 1).toDouble()).toInt()) {
-                        1 -> rn += " десять тысяч"
-                        2 -> rn += " двадцать"
-                        3 -> rn += " тридцать"
-                        4 -> rn += " сорок"
-                        5 -> rn += " пятьдесят"
-                        6 -> rn += " шестьдесят"
-                        7 -> rn += " семьдесят"
-                        8 -> rn += " восемьдесят"
-                        9 -> rn += " девяносто"
-                    }
-                }
-            }
-        }
-        if (k == 4) {
-            if (nc / pow(10.0, (k - 1).toDouble()).toInt() % 10 == 0) rn += " тысяч"
-            if (nc / pow(10.0, (k - 1).toDouble()).toInt() !in 11..19 && nc / pow(10.0, k.toDouble()).toInt() != 1) when (na / pow(10.0, (k - 1).toDouble()).toInt()) {
-                1 -> rn += " одна тысяча"
-                2 -> rn += " две тысячи"
-                3 -> rn += " три тысячи"
-                4 -> rn += " четыре тысячи"
-                5 -> rn += " пять тысяч"
-                6 -> rn += " шесть тысяч"
-                7 -> rn += " семь тысяч"
-                8 -> rn += " восемь тысяч"
-                9 -> rn += " девять тысяч"
-            }
-        }
-        if (k == 3) {
-            when (na / pow(10.0, (k - 1).toDouble()).toInt()) {
-                1 -> rn += " сто"
-                2 -> rn += " двести"
-                3 -> rn += " триста"
-                4 -> rn += " четыреста"
-                5 -> rn += " пятьсот"
-                6 -> rn += " шестьсот"
-                7 -> rn += " семьсот"
-                8 -> rn += " восемьсот"
-                9 -> rn += " девятьсот"
-            }
-        }
-        if (k == 2) {
-            when (na / pow(10.0, (k - 2).toDouble()).toInt()) {
-                11 -> rn += " одиннадцать"
-                12 -> rn += " двенадцать"
-                13 -> rn += " тринадцать"
-                14 -> rn += " четырнадцать"
-                15 -> rn += " пятнадцать"
-                16 -> rn += " шестнадцать"
-                17 -> rn += " семнадцать"
-                18 -> rn += " восемнадцать"
-                19 -> rn += " девятнадцать"
-                else -> {
-                    when (na / pow(10.0, (k - 1).toDouble()).toInt()) {
-                        1 -> rn += " десять"
-                        2 -> rn += " двадцать"
-                        3 -> rn += " тридцать"
-                        4 -> rn += " сорок"
-                        5 -> rn += " пятьдесят"
-                        6 -> rn += " шестьдесят"
-                        7 -> rn += " семьдесят"
-                        8 -> rn += " восемьдесят"
-                        9 -> rn += " девяносто"
-                    }
-                }
-            }
-        }
-        if ((k == 1) && (nc / pow(10.0, (k - 1).toDouble()).toInt() !in 11..19)) {
-            when (na / pow(10.0, (k - 1).toDouble()).toInt()) {
-                1 -> rn += " один"
-                2 -> rn += " два"
-                3 -> rn += " три"
-                4 -> rn += " четыре"
-                5 -> rn += " пять"
-                6 -> rn += " шесть"
-                7 -> rn += " семь"
-                8 -> rn += " восемь"
-                9 -> rn += " девять"
-            }
-        }
-        nc = na
-        k--
-        na %= pow(10.0, k.toDouble()).toInt()
+    }
+    if (nlast != 0) {
+        if (nlast / 100 != 0) rn += hund[nlast / 100] + " "
+        if (nlast % 100 in 11..19) rn += tens[nlast % 10] + " "
+        else if (nlast % 10 != 0) rn += tens2[nlast / 10 % 10] + " " + diglast[nlast % 10] + " "
     }
     return rn.replace("  ", " ").trim()
 }
