@@ -146,7 +146,7 @@ fun mean(list: List<Double>): Double =
  */
 fun center(list: MutableList<Double>): MutableList<Double> {
     val k = mean(list)
-    list.replaceAll { t -> t - k }
+    list.replaceAll { it - k }
     return list
 }
 
@@ -158,7 +158,7 @@ fun center(list: MutableList<Double>): MutableList<Double> {
  * C = a1b1 + a2b2 + ... + aNbN. Произведение пустых векторов считать равным 0.0.
  */
 fun times(a: List<Double>, b: List<Double>): Double =
-        (a.map { t -> t * b[a.indexOf(t)] }).sum()
+        a.mapIndexed { i, _ -> a[i] * b[i] }.sum()
 
 /**
  * Средняя
@@ -169,7 +169,7 @@ fun times(a: List<Double>, b: List<Double>): Double =
  * Значение пустого многочлена равно 0.0 при любом x.
  */
 fun polynom(p: List<Double>, x: Double): Double =
-        (p.map { t -> t * pow(x, p.indexOf(t).toDouble()) }).sum()
+        (p.mapIndexed { i, _ -> p[i] * pow(x, i.toDouble()) }).sum()
 
 /**
  * Средняя
@@ -280,12 +280,12 @@ fun decimal(digits: List<Int>, base: Int): Int =
  */
 
 fun charToInt(i: Char): Int = when (i.toInt()) {
-    in 48..56 -> (i.toInt() - 48)
+    in 48..57 -> (i.toInt() - 48)
     else -> ((i).toInt() - 87)
 }
 
 fun decimalFromString(str: String, base: Int): Int =
-        decimal((str.map { i -> (charToInt(i)) }), base)
+        decimal((str.map { k -> (charToInt(k)) }), base)
 
 /**
  * Сложная
@@ -307,6 +307,7 @@ fun roman(n: Int): String {
             rom[8].repeat(ka % 4 + m)
         } else {
             when (m) {
+                0 -> ""
                 in 1..3 -> rom[ka - 1].repeat(m)
                 4 -> rom[ka - 1] + rom[ka + 2]
                 in 5..8 -> rom[ka + 2] + rom[ka - 1].repeat(m - 5)
@@ -341,8 +342,9 @@ fun russian(n: Int): String {
     val nlast = n % 1000
     if (nfirst != 0) {
         if (nfirst / 100 != 0) rn += hund[nfirst / 100] + " "
-        if (nfirst % 100 in 11..19) rn += tens[nfirst % 10] + " "
-        else if (nfirst % 10 != 0) rn += tens2[nfirst / 10 % 10] + " " + digfirst[nfirst % 10] + " "
+        rn += if (nfirst % 100 in 11..19) tens[nfirst % 10] + " "
+        else tens2[nfirst / 10 % 10] + " "
+        if (nfirst % 10 != 0 && nfirst % 100 !in 11..19) rn += digfirst[nfirst % 10] + " "
         if (nfirst % 10 == 0 || nfirst % 100 in 11..19) rn += forms[2] + " "
         else when (nfirst % 10) {
             1 -> rn += forms[0] + " "
@@ -352,8 +354,9 @@ fun russian(n: Int): String {
     }
     if (nlast != 0) {
         if (nlast / 100 != 0) rn += hund[nlast / 100] + " "
-        if (nlast % 100 in 11..19) rn += tens[nlast % 10] + " "
-        else if (nlast % 10 != 0) rn += tens2[nlast / 10 % 10] + " " + diglast[nlast % 10] + " "
+        rn += if (nlast % 100 in 11..19) tens[nlast % 10] + " "
+        else tens2[nlast / 10 % 10] + " "
+        if (nlast % 10 != 0 && nlast % 100 !in 11..19) rn += diglast[nlast % 10]
     }
     return rn.replace("  ", " ").trim()
 }
