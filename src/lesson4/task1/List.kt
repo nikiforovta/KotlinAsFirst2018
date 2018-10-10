@@ -251,13 +251,8 @@ fun convert(n: Int, base: Int): List<Int> {
  * строчными буквами: 10 -> a, 11 -> b, 12 -> c и так далее.
  * Например: n = 100, base = 4 -> 1210, n = 250, base = 14 -> 13c
  */
-fun intToString(i: Int): String = when (i) {
-    in 0..9 -> (i.toString())
-    else -> ((i + 87).toChar().toString())
-}
-
 fun convertToString(n: Int, base: Int): String =
-        convert(n, base).joinToString(separator = "") { intToString(it) }
+        convert(n, base).joinToString(separator = "") { it.toString(36) }
 
 /**
  * Средняя
@@ -267,7 +262,8 @@ fun convertToString(n: Int, base: Int): String =
  * Например: digits = (1, 3, 12), base = 14 -> 250
  */
 fun decimal(digits: List<Int>, base: Int): Int =
-        digits.foldRightIndexed(0) { i, element, acc -> acc + element * (pow(base.toDouble(), (digits.size - 1 - i).toDouble())).toInt() }
+        digits.foldRightIndexed(0)
+        { i, element, acc -> acc + element * (pow(base.toDouble(), (digits.size - 1 - i).toDouble())).toInt() }
 
 /**
  * Сложная
@@ -279,13 +275,13 @@ fun decimal(digits: List<Int>, base: Int): Int =
  * Например: str = "13c", base = 14 -> 250
  */
 
-fun charToInt(i: Char): Int = when (i.toInt()) {
-    in 48..57 -> (i.toInt() - 48)
-    else -> ((i).toInt() - 87)
+fun charToInt(i: Char): Int = when (i) {
+    in '0'..'9' -> (i.toInt() - '0'.toInt())
+    else -> ((i).toInt() - 'W'.toInt())
 }
 
 fun decimalFromString(str: String, base: Int): Int =
-        decimal((str.map { k -> (charToInt(k)) }), base)
+        decimal((str.map { charToInt(it) }), base)
 
 /**
  * Сложная
@@ -297,7 +293,7 @@ fun decimalFromString(str: String, base: Int): Int =
  */
 
 fun roman(n: Int): String {
-    val rom: List<String> = listOf("I", "X", "C", "V", "L", "D", "X", "C", "M")
+    val rom = listOf("I", "X", "C", "V", "L", "D", "X", "C", "M")
     var nr = ""
     var ka = digitNumber(n)
     var na = n
