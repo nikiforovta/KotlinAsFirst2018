@@ -276,8 +276,8 @@ fun decimal(digits: List<Int>, base: Int): Int =
  */
 
 fun charToInt(i: Char): Int = when (i) {
-    in '0'..'9' -> (i.toInt() - '0'.toInt())
-    else -> ((i).toInt() - 'W'.toInt())
+    in '0'..'9' -> i - '0'
+    else -> i - 'a' + 10
 }
 
 fun decimalFromString(str: String, base: Int): Int =
