@@ -211,13 +211,15 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  */
 fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> {
     val res = friends.toMutableMap()
+    val pres = friends.toMutableMap()
     for ((name, friend) in res) {
         for (buddy in friend) {
-            if (res[buddy] != null) res[name] = res[name]!!.union(res[buddy]!! - name)
-            else res[buddy] = emptySet()
+            if (pres[buddy] != null) pres[name] = pres[name]!!.union(pres[buddy]!!)
+            else pres[buddy] = emptySet()
         }
     }
-    return res
+    for ((name, _) in res) pres[name] = pres[name]!! - name
+return pres
 }
 
 /**
@@ -246,7 +248,7 @@ fun subtractOf(a: MutableMap<String, String>, b: Map<String, String>) {
 fun whoAreInBoth(a: List<String>, b: List<String>): List<String> {
     val res = mutableListOf<String>()
     for (name in a) if (name in b) res.add(name)
-    return res
+    return res.toSet().toList()
 }
 
 /**
@@ -355,7 +357,7 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
     var cap = capacity
     val priceSort = treasures.toList().sortedByDescending { (_, info) -> info.second }.toMap()
     for ((name, info) in priceSort) {
-        if (info.first < cap && cap > 0) {
+        if (info.first <= cap && cap > 0) {
             res += name
             cap -= info.first
         }
