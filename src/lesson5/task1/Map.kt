@@ -212,14 +212,16 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
 fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> {
     val res = friends.toMutableMap()
     val pres = friends.toMutableMap()
-    for ((name, friend) in res) {
-        for (buddy in friend) {
-            if (pres[buddy] != null) pres[name] = pres[name]!!.union(pres[buddy]!!)
-            else pres[buddy] = emptySet()
+    repeat(2) {
+        for ((name, friend) in res) {
+            for (buddy in friend) {
+                if (res[buddy] != null) pres[name] = res[name]!!.union(res[buddy]!!)
+                else pres[buddy] = emptySet()
+            }
         }
     }
     for ((name, _) in res) pres[name] = pres[name]!! - name
-return pres
+    return pres
 }
 
 /**
@@ -261,7 +263,7 @@ fun whoAreInBoth(a: List<String>, b: List<String>): List<String> {
  *   canBuildFrom(listOf('a', 'b', 'o'), "baobab") -> true
  */
 fun canBuildFrom(chars: List<Char>, word: String): Boolean {
-    for (char in word) if (char !in chars) return false
+    for (char in word.toLowerCase()) if (char !in chars.toString().toLowerCase().toList()) return false
     return true
 }
 
@@ -355,8 +357,24 @@ fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
 fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<String> {
     var res = setOf<String>()
     var cap = capacity
+    val priceList = mutableListOf<Int>()
+    val weightList = mutableListOf<Int>()
+    if (treasures.isEmpty()) return setOf()
+    else for ((weight, price) in treasures.values) {
+        priceList.add(price)
+        weightList.add(weight)
+    }
+    priceList.sortedDescending()
+    weightList.sorted()
+    val bestPrice = priceList.drop(priceList.size / 2)
     val priceSort = treasures.toList().sortedByDescending { (_, info) -> info.second }.toMap()
+    val bestWeight = priceList.drop(weightList.size / 2)
     for ((name, info) in priceSort) {
+        if (info.first <= cap && cap > 0 && bestWeight.contains(info.first) && bestPrice.contains(info.second)) {
+            res += name
+            cap -= info.first
+            continue
+        }
         if (info.first <= cap && cap > 0) {
             res += name
             cap -= info.first
