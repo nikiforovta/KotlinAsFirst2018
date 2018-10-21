@@ -175,9 +175,9 @@ fun averageStockPrice(stockPrices: List<Pair<String, Double>>): Map<String, Doub
  */
 fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): String? {
     var cheapest: String? = null
-    var price = Double.MAX_VALUE
+    var price = 0.0
     for ((name, typrice) in stuff) {
-        if (typrice.first == kind && typrice.second < price) {
+        if (typrice.first == kind && (typrice.second < price || price == 0.0)) {
             price = typrice.second
             cheapest = name
         }
@@ -210,14 +210,18 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *        )
  */
 fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> {
-    val res = friends.toMutableMap()
+    var res = friends.toMutableMap()
     val pres = friends.toMutableMap()
-    repeat(2) {
-        for ((name, friend) in res) {
-            for (buddy in friend) {
-                if (res[buddy] != null) pres[name] = res[name]!!.union(res[buddy]!!)
-                else pres[buddy] = emptySet()
-            }
+    for ((name, friend) in res) {
+        for (buddy in friend) {
+            if (res[buddy] != null) pres[name] = res[name]!!.union(res[buddy]!!)
+            else pres[buddy] = emptySet()
+        }
+    }
+    res = pres
+    for ((name, friend) in res) {
+        for (buddy in friend) {
+            pres[name] = res[name]!!.union(res[buddy]!!)
         }
     }
     for ((name, _) in res) pres[name] = pres[name]!! - name
@@ -263,7 +267,7 @@ fun whoAreInBoth(a: List<String>, b: List<String>): List<String> {
  *   canBuildFrom(listOf('a', 'b', 'o'), "baobab") -> true
  */
 fun canBuildFrom(chars: List<Char>, word: String): Boolean {
-    for (char in word.toLowerCase()) if (char !in chars.toString().toLowerCase().toList()) return false
+    for (char in word.toLowerCase().toSet()) if (char !in chars.toString().toLowerCase().toSet() || char !in chars.toSet()) return false
     return true
 }
 
@@ -366,11 +370,15 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
     }
     priceList.sortedDescending()
     weightList.sorted()
-    val bestPrice = priceList.drop(priceList.size / 2)
     val priceSort = treasures.toList().sortedByDescending { (_, info) -> info.second }.toMap()
     val bestWeight = priceList.drop(weightList.size / 2)
     for ((name, info) in priceSort) {
-        if (info.first <= cap && cap > 0 && bestWeight.contains(info.first) && bestPrice.contains(info.second)) {
+        if (info.first <= cap && cap > 0 && bestWeight.contains(info.first)) {
+            res += name
+            cap -= info.first
+            continue
+        }
+        if (info.first <= cap && cap > 0 && info.first < info.second) {
             res += name
             cap -= info.first
             continue
