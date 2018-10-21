@@ -212,18 +212,21 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
 fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> {
     var res = friends.toMutableMap()
     val pres = friends.toMutableMap()
-    for ((name, friend) in res) {
+    val everyone = res.keys.toMutableList()
+    for ((_, friend) in res) {
         for (buddy in friend) {
-            if (res[buddy] != null) pres[name] = res[name]!!.union(res[buddy]!!)
-            else pres[buddy] = emptySet()
+            if (buddy !in everyone) everyone.add(buddy)
         }
     }
-    res = pres
-    for ((name, friend) in res) {
-        for (buddy in friend) {
-            pres[name] = res[name]!!.union(res[buddy]!!)
+    do {
+        for ((name, friend) in res) {
+            for (buddy in friend) {
+                if (res[buddy] != null) pres[name] = res[name]!!.union(res[buddy]!!)
+                else pres[buddy] = emptySet()
+            }
         }
-    }
+        res = pres
+    } while (pres.keys.size != everyone.size)
     for ((name, _) in res) pres[name] = pres[name]!! - name
     return pres
 }
@@ -267,7 +270,7 @@ fun whoAreInBoth(a: List<String>, b: List<String>): List<String> {
  *   canBuildFrom(listOf('a', 'b', 'o'), "baobab") -> true
  */
 fun canBuildFrom(chars: List<Char>, word: String): Boolean {
-    for (char in word.toLowerCase().toSet()) if (char !in chars.toString().toLowerCase().toSet() || char !in chars.toSet()) return false
+    for (char in word.toSet()) if (char.toLowerCase() !in chars.toString().toLowerCase().toSet()) return false
     return true
 }
 
@@ -368,25 +371,31 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
         priceList.add(price)
         weightList.add(weight)
     }
+    val priceToWeight = priceList.map { it -> it / weightList[priceList.indexOf(it)] }.sum()
     priceList.sortedDescending()
     weightList.sorted()
     val priceSort = treasures.toList().sortedByDescending { (_, info) -> info.second }.toMap()
     val bestWeight = priceList.drop(weightList.size / 2)
     for ((name, info) in priceSort) {
-        if (info.first <= cap && cap > 0 && bestWeight.contains(info.first)) {
+        if (info.first <= cap && name !in res && cap > 0 && info.second / info.first > priceToWeight) {
             res += name
             cap -= info.first
             continue
-        }
-        if (info.first <= cap && cap > 0 && info.first < info.second) {
-            res += name
-            cap -= info.first
-            continue
-        }
-        if (info.first <= cap && cap > 0) {
-            res += name
-            cap -= info.first
         }
     }
-    return res
+    for ((name, info) in priceSort) {
+        if (info.first <= cap && name !in res && cap > 0 && bestWeight.contains(info.first)) {
+            res += name
+            cap -= info.first
+            continue
+        }
+    }
+    for ((name, info) in priceSort) {
+        if (info.first <= cap && name !in res && cap > 0 && info.first < info.second) {
+            res += name
+            cap -= info.first
+            continue
+        }
+    }
+return res
 }
