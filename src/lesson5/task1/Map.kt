@@ -233,9 +233,6 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
         for ((name, friend) in pres) {
             if (friend !in res.values) res[name] = friend
         }
-        for ((name, friend) in res) {
-            for (buddy in friend) if (res[buddy] != null) pres[name] = res[name]!!.union(res[buddy]!!)
-        }
     } while (pres.keys.size != everyone.size)
     for ((name, _) in res) pres[name] = pres[name]!! - name
     return pres
@@ -403,6 +400,13 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
     }
     for ((name, info) in priceSort) {
         if (info.first <= cap && name !in res && cap > 0 && info.first < info.second) {
+            res += name
+            cap -= info.first
+            continue
+        }
+    }
+    for ((name, info) in priceSort) {
+        if (info.first <= cap && name !in res && cap > 0) {
             res += name
             cap -= info.first
             continue
