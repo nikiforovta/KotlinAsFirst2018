@@ -1,4 +1,4 @@
-@file:Suppress("UNUSED_PARAMETER", "ConvertCallChainIntoSequence")
+@file:Suppress("UNUSED_PAR AMETER", "ConvertCallChainIntoSequence")
 
 package lesson5.task1
 
@@ -177,7 +177,12 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
     var cheapest: String? = null
     var price = 0.0
     for ((name, typrice) in stuff) {
-        if (typrice.first == kind && (typrice.second < price || price == 0.0)) {
+        if (stuff[cheapest] != null) {
+            if (typrice.first == kind && (typrice.second < price || (price == 0.0 && stuff[cheapest]?.second != 0.0))) {
+                price = typrice.second
+                cheapest = name
+            }
+        } else if (typrice.first == kind && (typrice.second < price || price == 0.0)) {
             price = typrice.second
             cheapest = name
         }
@@ -210,7 +215,7 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *        )
  */
 fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> {
-    var res = friends.toMutableMap()
+    val res = friends.toMutableMap()
     val pres = friends.toMutableMap()
     val everyone = res.keys.toMutableList()
     for ((_, friend) in res) {
@@ -225,7 +230,12 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
                 else pres[buddy] = emptySet()
             }
         }
-        res = pres
+        for ((name, friend) in pres) {
+            if (friend !in res.values) res[name] = friend
+        }
+        for ((name, friend) in res) {
+            for (buddy in friend) if (res[buddy] != null) pres[name] = res[name]!!.union(res[buddy]!!)
+        }
     } while (pres.keys.size != everyone.size)
     for ((name, _) in res) pres[name] = pres[name]!! - name
     return pres
@@ -371,11 +381,12 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
         priceList.add(price)
         weightList.add(weight)
     }
-    val priceToWeight = priceList.map { it -> it / weightList[priceList.indexOf(it)] }.sum()
+    val priceToWeight = priceList.mapIndexed { i, it -> it / weightList[i] }.sum()
     priceList.sortedDescending()
     weightList.sorted()
     val priceSort = treasures.toList().sortedByDescending { (_, info) -> info.second }.toMap()
     val bestWeight = priceList.drop(weightList.size / 2)
+    val bestPrice = priceList.drop(priceList.size / 2)
     for ((name, info) in priceSort) {
         if (info.first <= cap && name !in res && cap > 0 && info.second / info.first > priceToWeight) {
             res += name
@@ -384,7 +395,7 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
         }
     }
     for ((name, info) in priceSort) {
-        if (info.first <= cap && name !in res && cap > 0 && bestWeight.contains(info.first)) {
+        if (info.first <= cap && name !in res && cap > 0 && bestWeight.contains(info.first) && bestPrice.contains(info.second)) {
             res += name
             cap -= info.first
             continue
@@ -397,5 +408,5 @@ fun bagPacking(treasures: Map<String, Pair<Int, Int>>, capacity: Int): Set<Strin
             continue
         }
     }
-return res
+    return res
 }
