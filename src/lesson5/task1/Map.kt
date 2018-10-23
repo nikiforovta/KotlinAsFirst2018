@@ -225,6 +225,7 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
             }
         }
     } while (pres != res)
+
     res.map { it -> if (it.key in it.value) it.value -= it.key }
     return res
 }
