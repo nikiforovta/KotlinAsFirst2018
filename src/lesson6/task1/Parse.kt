@@ -364,7 +364,6 @@ fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> {
     }
 
     while (stopLimit != 0 && command < commands.length) {
-        if (i !in 0 until cells) throw IllegalStateException()
         when (parts[command]) {
             "+" -> {
                 result[i]++
@@ -420,6 +419,7 @@ fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> {
             }
             else -> throw IllegalArgumentException()
         }
+        if (i !in 0 until cells) throw IllegalStateException()
     }
     return result
 }
