@@ -142,10 +142,8 @@ fun dateDigitToStr(digital: String): String {
  * При неверном формате вернуть пустую строку
  */
 fun flattenPhoneNumber(phone: String): String {
+    if (!phone.matches(Regex("""^(\+\s*\d)?([\d\s\-()])*"""))) return ""
     val parts = phone.split(" ", "-", "(", ")")
-    parts.forEach { it ->
-        if (it.contains(Regex("[a-zA-Z]|[.^\$*?{}_|()]"))) return ""
-    }
     return parts.joinToString(separator = "")
 }
 
@@ -160,7 +158,7 @@ fun flattenPhoneNumber(phone: String): String {
  * При нарушении формата входной строки или при отсутствии в ней чисел, вернуть -1.
  */
 fun bestLongJump(jumps: String): Int {
-    val parts = jumps.split(" ")
+    val parts = jumps.split(Regex("""( )+"""))
     var longJump = -1
     parts.forEach {
         if (!it.contains(Regex("[0-9]|[-%]"))) return -1
@@ -187,7 +185,7 @@ fun bestHighJump(jumps: String): Int {
     var highJump = -1
     parts.forEachIndexed { index, it ->
         if (!it.contains(Regex("[0-9]|[-+%]"))) return -1
-        if (it.toIntOrNull() != null && parts[index + 1] == "+") {
+        if (it.toIntOrNull() != null && parts[index + 1].matches(Regex("""(%)*\+"""))) {
             if (it.toInt() > highJump) highJump = it.toInt()
         }
     }
@@ -205,22 +203,24 @@ fun bestHighJump(jumps: String): Int {
  */
 fun plusMinus(expression: String): Int {
     val parts = expression.split(" ")
-    var res = parts[0].toInt()
-    when {
-        parts.size == 1 -> if (parts[0].contains(Regex("([+\\-])([0-9])|([0-9])([+\\-])"))
-                || parts[0].toIntOrNull() == null) throw IllegalArgumentException()
-        else return parts[0].toInt()
-        else -> (1 until parts.size).forEach { i ->
-            if (parts[i - 1].toIntOrNull() != null && parts[i].toIntOrNull() != null
-                    || parts[i - 1].toIntOrNull() == null && parts[i].toIntOrNull() == null
-                    || Regex("([+\\-])([0-9])|([0-9])([+\\-])") in parts[i - 1]
-                    || Regex("([+\\-])([0-9])|([0-9])([+\\-])") in parts[i])
+    if (parts[0].toIntOrNull() == null) throw IllegalArgumentException() else {
+        var res = parts[0].toInt()
+        when {
+            parts.size == 1 -> if (parts[0].contains(Regex("([+\\-])([0-9])|([0-9])([+\\-])")))
                 throw IllegalArgumentException()
-            if (parts[i].toIntOrNull() != null) if (parts[i - 1] == "+") res += parts[i].toInt()
-            else res -= parts[i].toInt()
+            else return parts[0].toInt()
+            else -> (1 until parts.size).forEach { i ->
+                if (parts[i - 1].toIntOrNull() != null && parts[i].toIntOrNull() != null
+                        || parts[i - 1].toIntOrNull() == null && parts[i].toIntOrNull() == null
+                        || Regex("([+\\-])([0-9])|([0-9])([+\\-])") in parts[i - 1]
+                        || Regex("([+\\-])([0-9])|([0-9])([+\\-])") in parts[i])
+                    throw IllegalArgumentException()
+                if (parts[i].toIntOrNull() != null) if (parts[i - 1] == "+") res += parts[i].toInt()
+                else res -= parts[i].toInt()
+            }
         }
+        return res
     }
-    return res
 }
 
 /**
@@ -300,7 +300,7 @@ fun fromRoman(roman: String): Int {
             }
         } else return -1
     }
-    return plusMinus(plusString.trim())
+    return if (plusString == "0 ") -1 else plusMinus(plusString.trim())
 }
 
 /**
@@ -363,6 +363,7 @@ fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> {
     }
 
     while (stopLimit != 0 && command < commands.length) {
+        if (i !in 0 until cells) throw IllegalStateException()
         when (parts[command]) {
             "+" -> {
                 result[i]++
@@ -418,7 +419,6 @@ fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> {
             }
             else -> throw IllegalArgumentException()
         }
-        if (i !in 0..cells) throw IllegalStateException()
     }
     return result
 }
