@@ -350,6 +350,7 @@ fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> {
     var command = 0
     var stopLimit = limit
     var cycleCommand = 0
+
     var checkForException = 0
     Regex("""[\[\]]""").findAll(commands).forEach { it ->
         if (it.value == "[") checkForException++ else checkForException--
