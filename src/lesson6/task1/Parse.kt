@@ -285,6 +285,7 @@ fun fromRoman(roman: String): Int {
     var res = 0
     val rom = listOf('I', 'V', 'X', 'L', 'C', 'D', 'M')
     val parts = roman.toList()
+    if (parts.isEmpty()) return -1
     if (parts.size == 1) return if (!rom.contains(parts[0])) -1 else romanarab(parts[0])
     for (i in 0 until parts.size - 1) {
         if (rom.contains(parts[i]) && rom.contains(parts[i + 1])) {
