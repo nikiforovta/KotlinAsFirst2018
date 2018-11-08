@@ -134,7 +134,7 @@ fun abs(v: List<Double>): Double =
  * Рассчитать среднее арифметическое элементов списка list. Вернуть 0.0, если список пуст
  */
 fun mean(list: List<Double>): Double =
-        if (list.isEmpty()) 0.0 else (list.sum() / list.size)
+        if (list.isEmpty()) 0.0 else list.map { it / list.size }.sum()
 
 /**
  * Средняя
