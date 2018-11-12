@@ -178,11 +178,12 @@ fun bestLongJump(jumps: String): Int {
  */
 fun bestHighJump(jumps: String): Int {
     val parts = jumps.split(" ")
+    if (parts.size % 2 != 0) return -1
     var highJump = -1
-    parts.forEachIndexed { index, it ->
-        if (!it.contains(Regex("[0-9]|[-+%]"))) return -1
-        if (it.toIntOrNull() != null && parts[index + 1].matches(Regex("""(%)*\+"""))) {
-            if (it.toInt() > highJump) highJump = it.toInt()
+    for (i in 0 until parts.size step 2) {
+        if (!parts[i].contains(Regex("[0-9]|[-+%]"))) return -1
+        if (parts[i].toIntOrNull() != null && parts[i + 1].matches(Regex("""(%)*\+"""))) {
+            if (parts[i].toInt() > highJump) highJump = parts[i].toInt()
         }
     }
     return highJump
@@ -201,20 +202,19 @@ fun plusMinus(expression: String): Int {
     val parts = expression.split(" ")
     for (i in 0 until parts.size) if (parts[i].contains(Regex("([+\\-])([0-9])|([0-9])([+\\-])")))
         throw IllegalArgumentException()
-    if (parts[0].toIntOrNull() == null) throw IllegalArgumentException() else {
-        var res = parts[0].toInt()
-        when {
-            parts.size == 1 ->  return parts[0].toInt()
-            else -> for (i in 1 until parts.size) {
-                if (parts[i - 1].toIntOrNull() != null && parts[i].toIntOrNull() != null
-                        || parts[i - 1].toIntOrNull() == null && parts[i].toIntOrNull() == null)
-                    throw IllegalArgumentException()
-                if (parts[i].toIntOrNull() != null) if (parts[i - 1] == "+") res += parts[i].toInt()
-                else res -= parts[i].toInt()
-            }
+    if (parts[0].toIntOrNull() == null) throw IllegalArgumentException()
+    var res = parts[0].toInt()
+    when {
+        parts.size == 1 -> return parts[0].toInt()
+        else -> for (i in 2 until parts.size step 2) {
+            if (parts[i - 1].toIntOrNull() != null && parts[i].toIntOrNull() != null
+                    || parts[i - 1].toIntOrNull() == null && parts[i].toIntOrNull() == null)
+                throw IllegalArgumentException()
+            if (parts[i - 1] == "+") res += parts[i].toInt()
+            else res -= parts[i].toInt()
         }
-        return res
     }
+    return res
 }
 
 /**
@@ -251,9 +251,11 @@ fun mostExpensive(description: String): String {
     var res = ""
     var price = -1.0
     val parts = description.split(" ", "; ")
-    for (i in 1 until parts.size step (2)) {
-        if (parts[i].toDouble() > price) {
-            price = parts[i].toDouble()
+    if (parts.size % 2 != 0) return ""
+    for (i in (1 until parts.size) step 2) {
+        val priceNow = parts[i].toDouble()
+        if (priceNow > price) {
+            price = priceNow
             res = parts[i - 1]
         }
     }
@@ -281,6 +283,7 @@ fun romanarab(a: Char) = when (a) {
     'M' -> 1000
     else -> 0
 }
+
 fun fromRoman(roman: String): Int {
     var res = 0
     val rom = listOf('I', 'V', 'X', 'L', 'C', 'D', 'M')
