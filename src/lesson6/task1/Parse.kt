@@ -202,13 +202,12 @@ fun plusMinus(expression: String): Int {
     val parts = expression.split(" ")
     for (i in 0 until parts.size) if (parts[i].contains(Regex("([+\\-])([0-9])|([0-9])([+\\-])")))
         throw IllegalArgumentException()
-    if (parts[0].toIntOrNull() == null) throw IllegalArgumentException()
+    if (parts[0].toIntOrNull() == null || parts.isEmpty() || parts.size % 2 == 0) throw IllegalArgumentException()
     var res = parts[0].toInt()
     when {
         parts.size == 1 -> return parts[0].toInt()
         else -> for (i in 2 until parts.size step 2) {
-            if (parts[i - 1].toIntOrNull() != null && parts[i].toIntOrNull() != null
-                    || parts[i - 1].toIntOrNull() == null && parts[i].toIntOrNull() == null)
+            if (parts[i - 1].toIntOrNull() != null)
                 throw IllegalArgumentException()
             if (parts[i - 1] == "+") res += parts[i].toInt()
             else res -= parts[i].toInt()
@@ -252,7 +251,7 @@ fun mostExpensive(description: String): String {
     var price = -1.0
     val parts = description.split(" ", "; ")
     if (parts.size % 2 != 0) return ""
-    for (i in (1 until parts.size) step 2) {
+    for (i in 1 until parts.size step 2) {
         val priceNow = parts[i].toDouble()
         if (priceNow > price) {
             price = priceNow
