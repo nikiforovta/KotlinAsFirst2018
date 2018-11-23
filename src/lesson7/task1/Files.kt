@@ -3,8 +3,6 @@
 package lesson7.task1
 
 import lesson3.task1.digitNumber
-import lesson3.task1.revert
-import lesson4.task1.charToInt
 import java.io.File
 
 /**
@@ -58,21 +56,16 @@ fun alignFile(inputName: String, lineLength: Int, outputName: String) {
  */
 fun countSubstrings(inputName: String, substrings: List<String>): Map<String, Int> {
     val res = mutableMapOf<String, Int>()
-    for (i in 0 until substrings.size) res[substrings[i]] = res[substrings[i]] ?: 0
+    for (substring in substrings) {
+        res[substring] = res[substring] ?: 0
+    }
     for (line in File(inputName).readLines()) {
-        val parts = line.split(" ")
-        for (i in 0 until parts.size) substrings.forEachIndexed { index, it ->
-            when {
-                it.toLowerCase() in parts[i].toLowerCase() -> if (it.length == 1 || it.length == parts[i].length)
-                    res[substrings[index]] = (res[substrings[index]]
-                            ?: 0) + parts[i].count { k -> k.toLowerCase() == it[0].toLowerCase() }
-                else {
-                    for (a in 0 until parts[i].length - it.length) {
-                        if (parts[i].substring(a, a + it.length).toLowerCase() == it.toLowerCase())
-                            res[substrings[index]] =
-                                    (res[substrings[index]] ?: 0) + 1
-                    }
-                }
+        for (word in line.split(" ")) for (it in substrings) {
+            if (it.toLowerCase() in word.toLowerCase()) when {
+                it.length == 1 -> res[it] = (res[it] ?: 0) + word.count { a -> a.toLowerCase() == it[0].toLowerCase() }
+                it.length == word.length -> res[it] = (res[it] ?: 0) + 1
+                else -> for (a in 0 until word.length - it.length)
+                    if (word.substring(a, a + it.length).toLowerCase() == it.toLowerCase()) res[it] = (res[it] ?: 0) + 1
             }
         }
     }
@@ -93,13 +86,13 @@ fun countSubstrings(inputName: String, substrings: List<String>): Map<String, In
  *
  */
 fun grammarChange(word: String, letter: Char): String {
-    return when (word[word.toLowerCase().indexOf(letter) + 1]) {
-        'ы' -> word.replace(word[word.toLowerCase().indexOf(letter) + 1], 'и')
-        'я' -> word.replace(word[word.toLowerCase().indexOf(letter) + 1], 'а')
-        'ю' -> word.replace(word[word.toLowerCase().indexOf(letter) + 1], 'у')
-        'Ы' -> word.replace(word[word.toLowerCase().indexOf(letter) + 1], 'И')
-        'Я' -> word.replace(word[word.toLowerCase().indexOf(letter) + 1], 'А')
-        'Ю' -> word.replace(word[word.toLowerCase().indexOf(letter) + 1], 'У')
+    return when (word[word.toLowerCase().indexOf(letter)]) {
+        'ы' -> word.replace(word[word.toLowerCase().indexOf(letter)], 'и')
+        'я' -> word.replace(word[word.toLowerCase().indexOf(letter)], 'а')
+        'ю' -> word.replace(word[word.toLowerCase().indexOf(letter)], 'у')
+        'Ы' -> word.replace(word[word.toLowerCase().indexOf(letter)], 'И')
+        'Я' -> word.replace(word[word.toLowerCase().indexOf(letter)], 'А')
+        'Ю' -> word.replace(word[word.toLowerCase().indexOf(letter)], 'У')
         else -> word
     }
 }
@@ -108,17 +101,11 @@ fun sibilants(inputName: String, outputName: String) {
     val outputStream = File(outputName).bufferedWriter()
     for (line in File(inputName).readLines()) {
         for ((index, word) in line.split(" ").withIndex()) {
-            when {
-                Regex("""ж(?=[ыяю])""") in word.toLowerCase() ->
-                    outputStream.write(grammarChange(word, 'ж'))
-                Regex("""ч(?=[ыяю])""") in word.toLowerCase() ->
-                    outputStream.write(grammarChange(word, 'ч'))
-                Regex("""ш(?=[ыяю])""") in word.toLowerCase() ->
-                    outputStream.write(grammarChange(word, 'ш'))
-                Regex("""щ(?=[ыяю])""") in word.toLowerCase() ->
-                    outputStream.write(grammarChange(word, 'щ'))
-                else -> outputStream.write(word)
-            }
+            var replaceWord = word
+            if (Regex("""(?<=[жшчщ])[ыяю]""") in word.toLowerCase())
+                for (letter in Regex("""(?<=[жшчщ])[ыяю]""").findAll(replaceWord.toLowerCase()))
+                    replaceWord = grammarChange(replaceWord, letter.value.single())
+            outputStream.write(replaceWord)
             if (index != line.split(" ").lastIndex)
                 outputStream.write(" ")
         }
@@ -155,7 +142,8 @@ fun centerFile(inputName: String, outputName: String) {
         }
     }
     for (line in File(inputName).readLines()) {
-        outputStream.write(" ".repeat((longestLineLength + line.trim().length) / 2 - line.length))
+        if (longestLineLength != line.trim().length)
+            outputStream.write(" ".repeat((longestLineLength + line.trim().length) / 2 - line.length))
         outputStream.write(line)
         outputStream.newLine()
     }
@@ -200,15 +188,16 @@ fun alignFileByWidth(inputName: String, outputName: String) {
         }
     }
     for (line in File(inputName).readLines()) {
-        if (line.trim().split(" ").toList().size < 2 || line.trim().length == longestLineLength)
+        if (line.trim().split(Regex("""\s+""")).toList().size < 2 ||
+                line.trim().replace(Regex("""\s+"""), " ").length == longestLineLength)
             outputStream.write(line.trim())
         else {
-            val space = longestLineLength - line.replace(" ", "").length
-            val rest = space % (line.trim().split(" ").toList().size - 1)
-            val everySpace = space / (line.trim().split(" ").toList().size - 1)
-            for ((index, word) in line.trim().split(" ").withIndex()) {
+            val space = longestLineLength - Regex("""\s+""").replace(line.trim(), "").length
+            val rest = space % (line.trim().split(Regex("""\s+""")).toList().size - 1)
+            val everySpace = space / (line.trim().split(Regex("""\s+""")).toList().size - 1)
+            for ((index, word) in line.trim().split(Regex("""\s+""")).withIndex()) {
                 outputStream.write(word)
-                if (index == line.trim().split(" ").toList().size - 1) continue
+                if (index == line.trim().split(Regex("""\s+""")).toList().size - 1) continue
                 outputStream.write(" ".repeat(everySpace))
                 if (index < rest) outputStream.write(" ")
             }
@@ -288,12 +277,14 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
     val outputStream = File(outputName).bufferedWriter()
     for (line in File(inputName).readLines()) if (line.isNotEmpty()) {
         for (i in 0 until line.length) when {
-            line[i].toTitleCase() in dictionary.keys -> if (line[i].toTitleCase() == line[i]) {
-                dictionary[line[i].toTitleCase()]!!.forEachIndexed { index, a ->
-                    if (index == 0) outputStream.write(a.toTitleCase().toString())
-                    else outputStream.write(a.toString().toLowerCase())
-                }
-            } else outputStream.write(dictionary[line[i].toTitleCase()]!!.toLowerCase())
+            line[i].toTitleCase() in dictionary.keys &&
+                    line[i].toString().matches(Regex("""[a-zа-яёA-ZА-ЯЁ]""")) ->
+                if (line[i].toTitleCase() == line[i]) {
+                    dictionary[line[i].toTitleCase()]!!.forEachIndexed { index, a ->
+                        if (index == 0) outputStream.write(a.toTitleCase().toString())
+                        else outputStream.write(a.toString().toLowerCase())
+                    }
+                } else outputStream.write(dictionary[line[i].toTitleCase()]!!.toLowerCase())
             line[i].toLowerCase() in dictionary.keys &&
                     line[i].toString().matches(Regex("""[a-zа-яёA-ZА-ЯЁ]""")) ->
                 if (line[i].toUpperCase() == line[i]) {
@@ -302,6 +293,8 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
                         else outputStream.write(a.toString().toLowerCase())
                     }
                 } else outputStream.write(dictionary[line[i].toLowerCase()]!!.toLowerCase())
+            line[i] in dictionary.keys && !line[i].toString().matches(Regex("""[a-zа-яёA-ZА-ЯЁ]""")) ->
+                outputStream.write(dictionary[line[i]]!!)
             else -> outputStream.write(line[i].toString())
         }
         outputStream.newLine()
@@ -336,19 +329,23 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
 fun chooseLongestChaoticWord(inputName: String, outputName: String) {
     val res = mutableMapOf<Int, List<String>>()
     var chaoticWordLength = 0
-    for (line in File(inputName).readLines()) {
-        if (line.isEmpty()) continue
-        val letters = mutableListOf<String>()
-        for (el in Regex("""[а-яёa-z]""").findAll(line.toLowerCase())) letters += el.value
-        val uniqueLetters = letters.toSet().toList()
-        if (letters.size == uniqueLetters.size) {
-            res[uniqueLetters.size] = (res[uniqueLetters.size] ?: emptyList()) + (line.trim())
-            if (uniqueLetters.size > chaoticWordLength) chaoticWordLength = uniqueLetters.size
+    try {
+        for (line in File(inputName).readLines()) {
+            if (line.isEmpty()) continue
+            val letters = mutableListOf<String>()
+            for (el in Regex("""[а-яёa-z]""").findAll(line.toLowerCase())) letters += el.value
+            val uniqueLetters = letters.toSet().toList()
+            if (letters.size == uniqueLetters.size) {
+                res[uniqueLetters.size] = (res[uniqueLetters.size] ?: emptyList()) + (line.trim())
+                if (uniqueLetters.size > chaoticWordLength) chaoticWordLength = uniqueLetters.size
+            }
         }
-    }
-    File(outputName).bufferedWriter().apply {
-        write(res[chaoticWordLength]!!.joinToString())
-        close()
+        File(outputName).bufferedWriter().apply {
+            write(res[chaoticWordLength]!!.joinToString())
+            close()
+        }
+    } catch (e: NullPointerException) {
+        File(outputName).writeText("")
     }
 }
 
@@ -536,10 +533,10 @@ fun markdownToHtml(inputName: String, outputName: String) {
 fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
     val outputStream = File(outputName).bufferedWriter()
     val multiElements = mutableListOf<Int>()
-    when {
-        rhv / 10 == 0 -> multiElements.add((lhv * rhv))
-        else -> for (i in 0 until revert(rhv).toString().length)
-            multiElements.add(lhv * charToInt(revert(rhv).toString()[i]))
+    var multiplier = rhv
+    while (multiplier != 0) {
+        multiElements.add(lhv * (multiplier % 10))
+        multiplier /= 10
     }
     val fullLine = (lhv * rhv).toString().length + 1
     outputStream.write(" ".repeat(fullLine - digitNumber(lhv)) + lhv.toString() + "\n" + "*" +
@@ -562,16 +559,16 @@ fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
  * Вывести в выходной файл процесс деления столбиком числа lhv (> 0) на число rhv (> 0).
  *
  * Пример (для lhv == 19935, rhv == 22):
-  19935 | 22
- -198     906
- ----
-    13
-    -0
-    --
-    135
-   -132
-   ----
-      3
+19935 | 22
+-198     906
+----
+13
+-0
+--
+135
+-132
+----
+3
 
  * Используемые пробелы, отступы и дефисы должны в точности соответствовать примеру.
  *
