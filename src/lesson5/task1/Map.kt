@@ -269,7 +269,7 @@ fun whoAreInBoth(a: List<String>, b: List<String>): List<String> {
  *   canBuildFrom(listOf('a', 'b', 'o'), "baobab") -> true
  */
 fun canBuildFrom(chars: List<Char>, word: String): Boolean {
-    val char = chars.joinToString()
+    val char = chars.joinToString(separator = "")
     word.forEach { if (it.toLowerCase() !in char.toLowerCase()) return false }
     return true
 }

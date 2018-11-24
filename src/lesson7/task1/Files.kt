@@ -64,7 +64,7 @@ fun countSubstrings(inputName: String, substrings: List<String>): Map<String, In
             if (it.toLowerCase() in word.toLowerCase()) when {
                 it.length == 1 -> res[it] = (res[it] ?: 0) + word.count { a -> a.toLowerCase() == it[0].toLowerCase() }
                 it.length == word.length -> res[it] = (res[it] ?: 0) + 1
-                else -> for (a in 0 until word.length - it.length)
+                else -> for (a in 0 until word.length - it.length + 1)
                     if (word.substring(a, a + it.length).toLowerCase() == it.toLowerCase()) res[it] = (res[it] ?: 0) + 1
             }
         }
@@ -85,14 +85,14 @@ fun countSubstrings(inputName: String, substrings: List<String>): Map<String, In
  * Исключения (жюри, брошюра, парашют) в рамках данного задания обрабатывать не нужно
  *
  */
-fun grammarChange(word: String, letter: Char): String {
-    return when (word[word.toLowerCase().indexOf(letter)]) {
-        'ы' -> word.replace(word[word.toLowerCase().indexOf(letter)], 'и')
-        'я' -> word.replace(word[word.toLowerCase().indexOf(letter)], 'а')
-        'ю' -> word.replace(word[word.toLowerCase().indexOf(letter)], 'у')
-        'Ы' -> word.replace(word[word.toLowerCase().indexOf(letter)], 'И')
-        'Я' -> word.replace(word[word.toLowerCase().indexOf(letter)], 'А')
-        'Ю' -> word.replace(word[word.toLowerCase().indexOf(letter)], 'У')
+fun grammarChange(word: String, letter: Char, i: IntRange): String {
+    return when (word[i.first]) {
+        'ы' -> word.replaceRange(i, "и")
+        'я' -> word.replaceRange(i, "а")
+        'ю' -> word.replaceRange(i, "у")
+        'Ы' -> word.replaceRange(i, "И")
+        'Я' -> word.replaceRange(i, "А")
+        'Ю' -> word.replaceRange(i, "У")
         else -> word
     }
 }
@@ -102,9 +102,8 @@ fun sibilants(inputName: String, outputName: String) {
     for (line in File(inputName).readLines()) {
         for ((index, word) in line.split(" ").withIndex()) {
             var replaceWord = word
-            if (Regex("""(?<=[жшчщ])[ыяю]""") in word.toLowerCase())
-                for (letter in Regex("""(?<=[жшчщ])[ыяю]""").findAll(replaceWord.toLowerCase()))
-                    replaceWord = grammarChange(replaceWord, letter.value.single())
+            for (letter in Regex("""((?<=[жшчщ])[ыяю])""").findAll(word.toLowerCase()))
+                replaceWord = grammarChange(replaceWord, letter.value.single(), letter.range)
             outputStream.write(replaceWord)
             if (index != line.split(" ").lastIndex)
                 outputStream.write(" ")
@@ -136,15 +135,15 @@ fun centerFile(inputName: String, outputName: String) {
     var longestLine = ""
     var longestLineLength = 0
     for (line in File(inputName).readLines()) {
-        if (line.length > longestLine.length) {
-            longestLine = line
+        if (line.trim().length > longestLine.length) {
+            longestLine = line.trim()
             longestLineLength = longestLine.length
         }
     }
     for (line in File(inputName).readLines()) {
-        if (longestLineLength != line.trim().length)
-            outputStream.write(" ".repeat((longestLineLength + line.trim().length) / 2 - line.length))
-        outputStream.write(line)
+        if (longestLineLength > line.trim().length)
+            outputStream.write(" ".repeat((longestLineLength + line.trim().length) / 2 - line.trim().length))
+        outputStream.write(line.trim())
         outputStream.newLine()
     }
     outputStream.close()
@@ -294,7 +293,7 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
                     }
                 } else outputStream.write(dictionary[line[i].toLowerCase()]!!.toLowerCase())
             line[i] in dictionary.keys && !line[i].toString().matches(Regex("""[a-zа-яёA-ZА-ЯЁ]""")) ->
-                outputStream.write(dictionary[line[i]]!!)
+                outputStream.write(dictionary[line[i]]!!.toLowerCase())
             else -> outputStream.write(line[i].toString())
         }
         outputStream.newLine()
