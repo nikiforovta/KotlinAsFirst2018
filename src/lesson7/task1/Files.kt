@@ -60,7 +60,7 @@ fun countSubstrings(inputName: String, substrings: List<String>): Map<String, In
         res[substring] = res[substring] ?: 0
     }
     for (line in File(inputName).readLines()) {
-        for (word in line.split(" ")) for (it in substrings) {
+        for (word in line.split(" ")) for (it in substrings.toSet()) {
             if (it.toLowerCase() in word.toLowerCase()) when {
                 it.length == 1 -> res[it] = (res[it] ?: 0) + word.count { a -> a.toLowerCase() == it[0].toLowerCase() }
                 it.length == word.length -> res[it] = (res[it] ?: 0) + 1
@@ -273,31 +273,20 @@ fun top20Words(inputName: String): Map<String, Int> {
  * Обратите внимание: данная функция не имеет возвращаемого значения
  */
 fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: String) {
+    val read = File(inputName).reader()
+    val fullDictionary = mutableMapOf<Char, String>()
+    for (it in dictionary.keys) {
+        fullDictionary[it.toLowerCase()] = (fullDictionary[it.toLowerCase()] ?: "") + dictionary[it]!!.toLowerCase()
+        if (it.toLowerCase() != it.toUpperCase()) fullDictionary[it.toUpperCase()] =
+                (fullDictionary[it.toUpperCase()] ?: "") + dictionary[it]!!.toLowerCase().capitalize()
+    }
     val outputStream = File(outputName).bufferedWriter()
-    for (line in File(inputName).readLines()) if (line.isNotEmpty()) {
-        for (i in 0 until line.length) when {
-            line[i].toTitleCase() in dictionary.keys &&
-                    line[i].toString().matches(Regex("""[a-zа-яёA-ZА-ЯЁ]""")) ->
-                if (line[i].toTitleCase() == line[i]) {
-                    dictionary[line[i].toTitleCase()]!!.forEachIndexed { index, a ->
-                        if (index == 0) outputStream.write(a.toTitleCase().toString())
-                        else outputStream.write(a.toString().toLowerCase())
-                    }
-                } else outputStream.write(dictionary[line[i].toTitleCase()]!!.toLowerCase())
-            line[i].toLowerCase() in dictionary.keys &&
-                    line[i].toString().matches(Regex("""[a-zа-яёA-ZА-ЯЁ]""")) ->
-                if (line[i].toUpperCase() == line[i]) {
-                    dictionary[line[i].toLowerCase()]!!.forEachIndexed { index, a ->
-                        if (index == 0) outputStream.write(a.toTitleCase().toString())
-                        else outputStream.write(a.toString().toLowerCase())
-                    }
-                } else outputStream.write(dictionary[line[i].toLowerCase()]!!.toLowerCase())
-            line[i] in dictionary.keys && !line[i].toString().matches(Regex("""[a-zа-яёA-ZА-ЯЁ]""")) ->
-                outputStream.write(dictionary[line[i]]!!.toLowerCase())
-            else -> outputStream.write(line[i].toString())
-        }
-        outputStream.newLine()
-    } else outputStream.newLine()
+    var charInt = read.read()
+    while (charInt != -1) {
+        if (fullDictionary.keys.contains(charInt.toChar())) outputStream.write(fullDictionary[charInt.toChar()])
+        else outputStream.write(charInt.toChar().toString())
+        charInt = read.read()
+    }
     outputStream.close()
 }
 
@@ -596,7 +585,7 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
             subtractor = subtrahend / rhv * rhv
             spaces += restOutput.length - digitNumber(subtractor) - 1
             if (k == 1) {
-                val secondSpaces = digitNumber(lhv) + 3 - spaces - digitNumber(subtractor)
+                val secondSpaces = digitNumber(lhv) + 3 - restOutput.length
                 outputStream.write("\n" + " ".repeat(spaces) + "-$subtractor" +
                         " ".repeat(secondSpaces) + "${(lhv / rhv)}")
             } else outputStream.write("\n" + " ".repeat(spaces) + "-$subtractor")
@@ -616,4 +605,3 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
         outputStream.close()
     }
 }
-
