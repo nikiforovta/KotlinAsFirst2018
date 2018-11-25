@@ -566,10 +566,11 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
     var subtrahend = 0
     var i = 0
     if (lhv < rhv) {
-        outputStream.write(" $lhv | $rhv\n")
-        outputStream.write(" ".repeat(digitNumber(lhv) - 1) + "-0" + "   0\n" +
-                " ".repeat(digitNumber(lhv) - 1) + "-".repeat(2) + "\n" +
-                " ".repeat(digitNumber(lhv)) + lhv.toString())
+        val spaces = if (digitNumber(lhv) > 1) 0 else 1
+        outputStream.write(" ".repeat(spaces) + "$lhv | $rhv\n")
+        outputStream.write(" ".repeat(spaces + digitNumber(lhv) - 2) + "-0" + "   0\n" +
+                " ".repeat(minOf(spaces, digitNumber(lhv) - 1)) + "-".repeat(maxOf(2, digitNumber(lhv))) + "\n" +
+                " ".repeat(spaces) + lhv.toString())
         outputStream.close()
     } else {
         while (subtrahend < rhv) {
@@ -604,4 +605,8 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
         }
         outputStream.close()
     }
+}
+
+fun main(args: Array<String>) {
+    println(printDivisionProcess(28496, 46160, "wow.txt"))
 }
