@@ -134,10 +134,9 @@ fun centerFile(inputName: String, outputName: String) {
         outputStream.write(lines[0].trim())
         outputStream.close()
     } else {
-        val longestLineLength = (lines.map { Regex("""\s+ """).replace(it, " ") }
-                .maxBy { it.length } ?: "").length
+        val longestLineLength = (lines.maxBy { it.length } ?: "").length
         for (line in lines) {
-            val currentLineLength = Regex("""\s+""").replace(line, " ").trim().length
+            val currentLineLength = line.trim().length
             if (longestLineLength > currentLineLength)
                 outputStream.write(" ".repeat((longestLineLength + currentLineLength) / 2 - currentLineLength))
             outputStream.write(line.trim())

@@ -33,8 +33,8 @@ data class Square(val column: Int, val row: Int) {
  * Если нотация некорректна, бросить IllegalArgumentException
  */
 fun square(notation: String): Square {
-    if (notation.isBlank()) throw IllegalArgumentException()
-    if (notation[0] in 'a'..'h' && notation[1] in '1'..'8' && notation.length == 2)
+    if (notation.length != 2) throw IllegalArgumentException()
+    if (notation[0] in 'a'..'h' && notation[1] in '1'..'8')
         return Square(notation[0] - 'a' + 1, notation[1].toString().toInt())
     else throw IllegalArgumentException()
 }
@@ -152,7 +152,7 @@ fun bishopTrajectory(start: Square, end: Square): List<Square> {
     when (bishopMoveNumber(start, end)) {
         1 -> res.add(end)
         2 -> {
-            val row = (end.row + start.row) / 2
+            val row = if ((end.row + start.row) % 2 != 0) minOf(start.row, end.row) + 1 else (end.row + start.row) / 2
             val firstCheck = setOf(start.column + abs(row - start.row), start.column - abs(row - start.row))
             val column: Int
             val secondCheck = setOf(-(abs(end.row - row) - end.column), -(-abs(end.row - row) - end.column))
