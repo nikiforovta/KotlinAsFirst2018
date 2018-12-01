@@ -32,9 +32,12 @@ data class Square(val column: Int, val row: Int) {
  * В нотации, колонки обозначаются латинскими буквами от a до h, а ряды -- цифрами от 1 до 8.
  * Если нотация некорректна, бросить IllegalArgumentException
  */
-fun square(notation: String): Square = if (notation[0] in 'a'..'h' && notation[1] in '1'..'8' && notation.length == 2)
-    Square(notation[0] - 'a' + 1, notation[1].toString().toInt())
-else throw IllegalArgumentException()
+fun square(notation: String): Square {
+    if (notation.isBlank()) throw IllegalArgumentException()
+    if (notation[0] in 'a'..'h' && notation[1] in '1'..'8' && notation.length == 2)
+        return Square(notation[0] - 'a' + 1, notation[1].toString().toInt())
+    else throw IllegalArgumentException()
+}
 
 /**
  * Простая
@@ -151,8 +154,10 @@ fun bishopTrajectory(start: Square, end: Square): List<Square> {
         2 -> {
             val row = (end.row + start.row) / 2
             val firstCheck = setOf(start.column + abs(row - start.row), start.column - abs(row - start.row))
+            val column: Int
             val secondCheck = setOf(-(abs(end.row - row) - end.column), -(-abs(end.row - row) - end.column))
-            val column = firstCheck.intersect(secondCheck).toIntArray().filter { it in 1..8 }[0]
+            if (firstCheck.intersect(secondCheck).toIntArray().none { it in 1..8 }) return emptyList()
+            column = firstCheck.intersect(secondCheck).toIntArray().filter { it in 1..8 }[0]
             res.addAll(listOf(Square(column, row), end))
         }
     }

@@ -129,16 +129,22 @@ fun sibilants(inputName: String, outputName: String) {
  */
 fun centerFile(inputName: String, outputName: String) {
     val outputStream = File(outputName).bufferedWriter()
-    val lines = File(inputName).readLines().map { Regex("""\s+ """).replace(it, " ") }
-    val longestLineLength = (lines.maxBy { it.length } ?: "").length
-    for (line in lines) {
-        val currentLineLength = line.trim().length
-        if (longestLineLength > currentLineLength)
-            outputStream.write(" ".repeat((longestLineLength + currentLineLength) / 2 - currentLineLength))
-        outputStream.write(line.trim())
-        outputStream.newLine()
+    val lines = File(inputName).readLines()
+    if (lines.size == 1) {
+        outputStream.write(lines[0].trim())
+        outputStream.close()
+    } else {
+        val longestLineLength = (lines.map { Regex("""\s+ """).replace(it, " ") }
+                .maxBy { it.length } ?: "").length
+        for (line in lines) {
+            val currentLineLength = Regex("""\s+""").replace(line, " ").trim().length
+            if (longestLineLength > currentLineLength)
+                outputStream.write(" ".repeat((longestLineLength + currentLineLength) / 2 - currentLineLength))
+            outputStream.write(line.trim())
+            outputStream.newLine()
+        }
+        outputStream.close()
     }
-    outputStream.close()
 }
 
 /**
@@ -590,8 +596,4 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
         }
         outputStream.close()
     }
-}
-
-fun main(args: Array<String>) {
-    println(printDivisionProcess(28496, 46160, "wow.txt"))
 }
