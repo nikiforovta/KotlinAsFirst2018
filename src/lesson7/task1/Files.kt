@@ -99,16 +99,13 @@ fun grammarChange(word: String, letter: Char, i: IntRange): String {
 
 fun sibilants(inputName: String, outputName: String) {
     val outputStream = File(outputName).bufferedWriter()
-    for (line in File(inputName).readLines()) {
-        for ((index, word) in line.split(" ").withIndex()) {
-            var replaceWord = word
-            for (letter in Regex("""((?<=[жшчщ])[ыяю])""").findAll(word.toLowerCase()))
-                replaceWord = grammarChange(replaceWord, letter.value.single(), letter.range)
-            outputStream.write(replaceWord)
-            if (index != line.split(" ").lastIndex)
-                outputStream.write(" ")
-        }
-        outputStream.newLine()
+    val inputStream = File(inputName).readText().split(" ")
+    for ((i, word) in inputStream.withIndex()) {
+        var replaceWord = word
+        for (letter in Regex("""((?<=[жшчщ])[ыяю])""").findAll(word.toLowerCase()))
+            replaceWord = grammarChange(replaceWord, letter.value.single(), letter.range)
+        outputStream.write(replaceWord)
+        if (i != inputStream.lastIndex) outputStream.write(" ")
     }
     outputStream.close()
 }
@@ -132,17 +129,12 @@ fun sibilants(inputName: String, outputName: String) {
  */
 fun centerFile(inputName: String, outputName: String) {
     val outputStream = File(outputName).bufferedWriter()
-    var longestLine = ""
-    var longestLineLength = 0
-    for (line in File(inputName).readLines()) {
-        if (line.trim().length > longestLine.length) {
-            longestLine = line.trim()
-            longestLineLength = longestLine.length
-        }
-    }
-    for (line in File(inputName).readLines()) {
-        if (longestLineLength > line.trim().length)
-            outputStream.write(" ".repeat((longestLineLength + line.trim().length) / 2 - line.trim().length))
+    val lines = File(inputName).readLines().map { Regex("""\s+ """).replace(it, " ") }
+    val longestLineLength = (lines.maxBy { it.length } ?: "").length
+    for (line in lines) {
+        val currentLineLength = line.trim().length
+        if (longestLineLength > currentLineLength)
+            outputStream.write(" ".repeat((longestLineLength + currentLineLength) / 2 - currentLineLength))
         outputStream.write(line.trim())
         outputStream.newLine()
     }
@@ -178,28 +170,21 @@ fun centerFile(inputName: String, outputName: String) {
  */
 fun alignFileByWidth(inputName: String, outputName: String) {
     val outputStream = File(outputName).bufferedWriter()
-    var longestLine = ""
-    var longestLineLength = 0
-    for (line in File(inputName).readLines()) {
-        if (line.trim().length > longestLine.length) {
-            longestLine = line.trim()
-            longestLineLength = line.trim().length
-        }
-    }
-    for (line in File(inputName).readLines()) {
-        if (line.trim().split(Regex("""\s+""")).toList().size < 2 ||
-                line.trim().replace(Regex("""\s+"""), " ").length == longestLineLength)
-            outputStream.write(line.trim())
+    val longestLineLength = (File(inputName).readLines().map { it.trim() }.maxBy { it.length } ?: "").length
+    for (line in File(inputName).readLines().map { it.trim() }) {
+        val words = Regex("""\s+""").split(line)
+        val lastIndex = words.lastIndex
+        if (lastIndex < 1 ||
+                words.joinToString(" ").length == longestLineLength)
+            outputStream.write(line)
         else {
-            val space = longestLineLength - Regex("""\s+""").replace(line.trim(), "").length
-            val rest = space % (line.trim().split(Regex("""\s+""")).toList().size - 1)
-            val everySpace = space / (line.trim().split(Regex("""\s+""")).toList().size - 1)
-            for ((index, word) in line.trim().split(Regex("""\s+""")).withIndex()) {
-                outputStream.write(word)
-                if (index == line.trim().split(Regex("""\s+""")).toList().size - 1) continue
-                outputStream.write(" ".repeat(everySpace))
-                if (index < rest) outputStream.write(" ")
-            }
+            val space = longestLineLength - words.joinToString("").length
+            val everySpace = space / lastIndex
+            val rest = space % lastIndex
+            for ((index, word) in words.withIndex())
+                outputStream
+                        .write(word + if (index != lastIndex) " ".repeat(everySpace + if (index < rest) 1 else 0)
+                        else "")
         }
         outputStream.newLine()
     }
@@ -315,17 +300,17 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
  * Обратите внимание: данная функция не имеет возвращаемого значения
  */
 fun chooseLongestChaoticWord(inputName: String, outputName: String) {
-    val res = mutableMapOf<Int, List<String>>()
+    val res = mutableMapOf<Int, MutableList<String>>()
     var chaoticWordLength = 0
     try {
         for (line in File(inputName).readLines()) {
             if (line.isEmpty()) continue
             val letters = mutableListOf<String>()
             for (el in Regex("""[а-яёa-z]""").findAll(line.toLowerCase())) letters += el.value
-            val uniqueLetters = letters.toSet().toList()
-            if (letters.size == uniqueLetters.size) {
-                res[uniqueLetters.size] = (res[uniqueLetters.size] ?: emptyList()) + (line.trim())
-                if (uniqueLetters.size > chaoticWordLength) chaoticWordLength = uniqueLetters.size
+            val uniqueLettersSize = letters.toSet().toList().size
+            if (letters.size == uniqueLettersSize) {
+                res.getOrPut(uniqueLettersSize) { mutableListOf() }.add(line.trim())
+                if (uniqueLettersSize > chaoticWordLength) chaoticWordLength = uniqueLettersSize
             }
         }
         File(outputName).bufferedWriter().apply {

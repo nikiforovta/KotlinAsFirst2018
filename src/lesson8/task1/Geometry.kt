@@ -30,7 +30,7 @@ class Triangle private constructor(private val points: Set<Point>) {
 
     val c: Point get() = pointList[2]
 
-    constructor(a: Point, b: Point, c: Point): this(linkedSetOf(a, b, c))
+    constructor(a: Point, b: Point, c: Point) : this(linkedSetOf(a, b, c))
     /**
      * Пример: полупериметр
      */
@@ -102,13 +102,12 @@ data class Segment(val begin: Point, val end: Point) {
  */
 fun diameter(vararg points: Point): Segment {
     if (points.size < 2) throw IllegalArgumentException()
-    val point = points.toList()
     var begin = Point(0.0, 0.0)
     var end = Point(0.0, 0.0)
-    for (i in 0 until point.size) for (k in 1 until point.size)
-        if (point[i].distance(point[k]) > begin.distance(end)) {
-            end = point[k]
-            begin = point[i]
+    for (i in 0 until points.size) for (k in i + 1 until points.size)
+        if (points[i].distance(points[k]) > begin.distance(end)) {
+            end = points[k]
+            begin = points[i]
         }
     return Segment(begin, end)
 }
@@ -142,7 +141,11 @@ class Line private constructor(val b: Double, val angle: Double) {
      * Найти точку пересечения с другой линией.
      * Для этого необходимо составить и решить систему из двух уравнений (каждое для своей прямой)
      */
-    fun crossPoint(other: Line): Point = TODO()
+    fun crossPoint(other: Line): Point {
+        val x = (other.b * cos(angle) - b * cos(other.angle)) / sin(angle - other.angle)
+        val y = (other.b * sin(angle) - b * sin(other.angle)) / sin(angle - other.angle)
+        return Point(x, y)
+    }
 
     override fun equals(other: Any?) = other is Line && angle == other.angle && b == other.b
 
@@ -167,15 +170,22 @@ fun lineBySegment(s: Segment): Line = lineByPoints(s.begin, s.end)
  *
  * Построить прямую по двум точкам
  */
-fun lineByPoints(a: Point, b: Point): Line = Line(a, atan2(b.y - a.y, b.x - a.x) % PI)
+fun lineByPoints(a: Point, b: Point): Line {
+    var angle = atan2(a.y - b.y, a.x - b.x)
+    while (angle < 0) angle += PI
+    return Line(a, angle % PI)
+}
 
 /**
  * Сложная
  *
  * Построить серединный перпендикуляр по отрезку или по двум точкам
  */
-fun bisectorByPoints(a: Point, b: Point): Line = Line(Point(((a.x + b.x) / 2.0), ((a.y + b.y) / 2.0)),
-        atan2(b.y - a.y, b.x - a.x) % PI + PI / 2)
+fun bisectorByPoints(a: Point, b: Point): Line {
+    var angle = atan2(b.y - a.y, b.x - a.x)
+    while (angle < 0) angle += PI
+    return Line(Point(((a.x + b.x) / 2.0), ((a.y + b.y) / 2.0)), (angle + PI / 2) % PI)
+}
 
 /**
  * Средняя
@@ -185,15 +195,14 @@ fun bisectorByPoints(a: Point, b: Point): Line = Line(Point(((a.x + b.x) / 2.0),
  */
 fun findNearestCirclePair(vararg circles: Circle): Pair<Circle, Circle> {
     if (circles.size < 2) throw IllegalArgumentException()
-    val circle = circles.toList()
-    var begin = Circle(Point(0.0, 0.0), 0.0)
-    var end = Circle(Point(0.0, 0.0), 0.0)
-    for (i in 0 until circle.size) for (k in 1 until circle.size)
-        if (circle[i].distance(circle[k]) < begin.distance(end) || begin == end) {
-            end = circle[k]
-            begin = circle[i]
+    var minDistance = circles[0].distance(circles[1])
+    var res = Pair(circles[0], circles[1])
+    for (i in 0 until circles.size) for (k in i + 1 until circles.size)
+        if (circles[i].distance(circles[k]) < minDistance) {
+            minDistance = circles[i].distance(circles[k])
+            res = Pair(circles[i], circles[k])
         }
-    return begin to end
+    return res
 }
 
 /**
@@ -205,7 +214,10 @@ fun findNearestCirclePair(vararg circles: Circle): Pair<Circle, Circle> {
  * (построить окружность по трём точкам, или
  * построить окружность, описанную вокруг треугольника - эквивалентная задача).
  */
-fun circleByThreePoints(a: Point, b: Point, c: Point): Circle = TODO()
+fun circleByThreePoints(a: Point, b: Point, c: Point): Circle {
+    val center = bisectorByPoints(a, b).crossPoint(bisectorByPoints(b, c))
+    return Circle(center, maxOf(a.distance(center), b.distance(center), c.distance(center)))
+}
 
 /**
  * Очень сложная
@@ -218,5 +230,44 @@ fun circleByThreePoints(a: Point, b: Point, c: Point): Circle = TODO()
  * три точки данного множества, либо иметь своим диаметром отрезок,
  * соединяющий две самые удалённые точки в данном множестве.
  */
-fun minContainingCircle(vararg points: Point): Circle = TODO()
+fun minContainingCircle(vararg points: Point): Circle {
+    when (points.size) {
+        0 -> throw IllegalArgumentException()
+        1 -> return Circle(points[0], 0.0)
+        2 -> return circleByDiameter(Segment(points[0], points[1]))
+    }
+    val circle = mutableListOf<Circle>()
+    for (i in 0 until points.size) circle.add(Circle(Point(0.0, 0.0), 0.0))
+    val p = points.toMutableList().shuffled()
+    circle[1] = (circleByDiameter(Segment(p[0], p[1])))
+    for (i in 2 until p.size) {
+        circle[i] = if (circle[i - 1].contains(p[i])) circle[i - 1]
+        else minCircleWithPoint(p.take(i), p[i])
+    }
+    return circle.last()
+}
 
+fun minCircleWithPoint(points: List<Point>, pi: Point): Circle {
+    val circle = mutableListOf<Circle>()
+    for (i in 0 until points.size) circle.add(Circle(Point(0.0, 0.0), 0.0))
+    val p = points.toMutableList().shuffled()
+    circle[0] = (circleByDiameter(Segment(p[0], pi)))
+    for (k in 1 until points.size) {
+        circle[k] = if (circle[k - 1].contains(p[k])) circle[k - 1]
+        else minCircleWith2Points(p.take(k), pi, p[k])
+    }
+    return circle[points.size - 1]
+}
+
+fun minCircleWith2Points(p: List<Point>, pi: Point, pk: Point): Circle {
+    val circle = mutableListOf<Circle>()
+    for (i in 0 until p.size) circle.add(Circle(Point(0.0, 0.0), 0.0))
+    circle.add(0, circleByDiameter(Segment(pi, pk)))
+    val points = p.toMutableList()
+    points.add(0, Point(0.0, 0.0))
+    for (j in 1 until points.size) {
+        circle[j] = if (circle[j - 1].contains(points[j])) circle[j - 1]
+        else circleByThreePoints(points[j], pi, pk)
+    }
+    return circle[points.size - 1]
+}
