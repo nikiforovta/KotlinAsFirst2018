@@ -152,13 +152,18 @@ fun bishopTrajectory(start: Square, end: Square): List<Square> {
     when (bishopMoveNumber(start, end)) {
         1 -> res.add(end)
         2 -> {
-            val row = if ((end.row + start.row) % 2 != 0) minOf(start.row, end.row) + 1 else (end.row + start.row) / 2
-            val firstCheck = setOf(start.column + abs(row - start.row), start.column - abs(row - start.row))
-            val column: Int
-            val secondCheck = setOf(-(abs(end.row - row) - end.column), -(-abs(end.row - row) - end.column))
-            if (firstCheck.intersect(secondCheck).toIntArray().none { it in 1..8 }) return emptyList()
-            column = firstCheck.intersect(secondCheck).toIntArray().filter { it in 1..8 }[0]
-            res.addAll(listOf(Square(column, row), end))
+            val firstRow = (start.row + start.column - end.row + end.column) / 2 + end.row - end.column
+            val secondRow = (end.row + end.column - start.row + start.column) / 2 + start.row - start.column
+            var firstCheck = setOf(start.column + abs(firstRow - start.row), start.column - abs(firstRow - start.row))
+            var secondCheck = setOf(-(abs(end.row - firstRow) - end.column), -(-abs(end.row - firstRow) - end.column))
+            if (firstCheck.intersect(secondCheck).toIntArray().none { it in 1..8 }) {
+                firstCheck = setOf(start.column + abs(secondRow - start.row), start.column - abs(secondRow - start.row))
+                secondCheck = setOf(-(abs(end.row - secondRow) - end.column), -(-abs(end.row - secondRow) - end.column))
+                if (firstCheck.intersect(secondCheck).toIntArray().none { it in 1..8 }) return emptyList()
+                else res.addAll(listOf(Square(firstCheck.intersect(secondCheck).toIntArray()
+                        .filter { it in 1..8 }[0], secondRow), end))
+            } else res.addAll(listOf(Square(firstCheck.intersect(secondCheck).toIntArray()
+                    .filter { it in 1..8 }[0], firstRow), end))
         }
     }
     return res
