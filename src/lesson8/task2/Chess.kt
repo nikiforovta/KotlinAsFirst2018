@@ -1,7 +1,9 @@
 @file:Suppress("UNUSED_PARAMETER")
 package lesson8.task2
 
+import lesson8.task3.Graph
 import kotlin.math.abs
+
 /**
  * Клетка шахматной доски. Шахматная доска квадратная и имеет 8 х 8 клеток.
  * Поэтому, обе координаты клетки (горизонталь row, вертикаль column) могут находиться в пределах от 1 до 8.
@@ -22,7 +24,7 @@ data class Square(val column: Int, val row: Int) {
      * В нотации, колонки обозначаются латинскими буквами от a до h, а ряды -- цифрами от 1 до 8.
      * Для клетки не в пределах доски вернуть пустую строку
      */
-    fun notation(): String = if (inside()) ('a'.toInt() + column - 1).toChar().toString() + row.toString() else ""
+    fun notation(): String = if (inside()) 'a' + column - 1 + "$row" else ""
 }
 
 /**
@@ -35,7 +37,7 @@ data class Square(val column: Int, val row: Int) {
 fun square(notation: String): Square {
     if (notation.length != 2) throw IllegalArgumentException()
     if (notation[0] in 'a'..'h' && notation[1] in '1'..'8')
-        return Square(notation[0] - 'a' + 1, notation[1].toString().toInt())
+        return Square(notation[0] - 'a' + 1, notation[1] - '0')
     else throw IllegalArgumentException()
 }
 
@@ -84,15 +86,7 @@ fun rookMoveNumber(start: Square, end: Square): Int {
  *          rookTrajectory(Square(3, 5), Square(8, 5)) = listOf(Square(3, 5), Square(8, 5))
  * Если возможно несколько вариантов самой быстрой траектории, вернуть любой из них.
  */
-fun rookTrajectory(start: Square, end: Square): List<Square> {
-    val res = mutableListOf<Square>()
-    res.add(start)
-    when (rookMoveNumber(start, end)) {
-        1 -> res.add(end)
-        2 -> res.addAll(listOf(Square(end.column, start.row), end))
-    }
-    return res
-}
+fun rookTrajectory(start: Square, end: Square): List<Square> = setOf(start, Square(start.column, end.row), end).toList()
 
 /**
  * Простая
@@ -211,11 +205,14 @@ fun kingMoveNumber(start: Square, end: Square): Int {
 fun kingTrajectory(start: Square, end: Square): List<Square> {
     val res = mutableListOf<Square>()
     res.add(start)
-    repeat(minOf(abs(start.row - end.row), abs(start.column - end.column))) {
-        if (end.row > start.row && end.column > start.column) res.add(Square(res[it].column + 1, res[it].row + 1))
-        if (end.row < start.row && end.column > start.column) res.add(Square(res[it].column + 1, res[it].row - 1))
-        if (end.row < start.row && end.column < start.column) res.add(Square(res[it].column - 1, res[it].row - 1))
-        if (end.row > start.row && end.column < start.column) res.add(Square(res[it].column - 1, res[it].row + 1))
+    var i = 0
+    while (true) {
+        if (res.last().row == end.row || res.last().column == end.column) break
+        if (end.row > start.row && end.column > start.column) res.add(Square(res[i].column + 1, res[i].row + 1))
+        if (end.row < start.row && end.column > start.column) res.add(Square(res[i].column + 1, res[i].row - 1))
+        if (end.row < start.row && end.column < start.column) res.add(Square(res[i].column - 1, res[i].row - 1))
+        if (end.row > start.row && end.column < start.column) res.add(Square(res[i].column - 1, res[i].row + 1))
+        i++
     }
     if (res.last().row == end.row) {
         repeat(maxOf(abs(start.row - end.row), abs(start.column - end.column)) -
@@ -256,7 +253,32 @@ fun kingTrajectory(start: Square, end: Square): List<Square> {
  * Пример: knightMoveNumber(Square(3, 1), Square(6, 3)) = 3.
  * Конь может последовательно пройти через клетки (5, 2) и (4, 4) к клетке (6, 3).
  */
-fun knightMoveNumber(start: Square, end: Square): Int = TODO()
+
+fun createKnightGraph(): Graph {
+    val g = Graph()
+    val knightMoves = listOf(Pair(-1, -2), Pair(-2, -1), Pair(-2, 1), Pair(1, -2),
+            Pair(-1, 2), Pair(2, -1), Pair(1, 2), Pair(2, 1))
+    for (i in 'a'..'h') {
+        for (j in 1..8) {
+            g.addVertex("$i$j")
+        }
+    }
+    for (i in 1..8) {
+        for (j in 1..8) {
+            val x = Square(i, j).notation()
+            for ((first, second) in knightMoves) {
+                var y: String
+                if (i + first in 1..8 && j + second in 1..8)
+                    y = Square(i + first, j + second).notation()
+                else continue
+                g.connect(x, y)
+            }
+        }
+    }
+    return g
+}
+
+fun knightMoveNumber(start: Square, end: Square): Int = createKnightGraph().bfs(start.notation(), end.notation())
 
 /**
  * Очень сложная

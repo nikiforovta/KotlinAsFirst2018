@@ -1,4 +1,5 @@
 @file:Suppress("UNUSED_PARAMETER")
+
 package lesson8.task1
 
 import lesson1.task1.sqr
@@ -31,6 +32,7 @@ class Triangle private constructor(private val points: Set<Point>) {
     val c: Point get() = pointList[2]
 
     constructor(a: Point, b: Point, c: Point) : this(linkedSetOf(a, b, c))
+
     /**
      * Пример: полупериметр
      */
@@ -90,8 +92,7 @@ data class Segment(val begin: Point, val end: Point) {
     override fun equals(other: Any?) =
             other is Segment && (begin == other.begin && end == other.end || end == other.begin && begin == other.end)
 
-    override fun hashCode() =
-            begin.hashCode() + end.hashCode()
+    override fun hashCode() = begin.hashCode() + end.hashCode()
 }
 
 /**
@@ -104,11 +105,12 @@ fun diameter(vararg points: Point): Segment {
     if (points.size < 2) throw IllegalArgumentException()
     var begin = Point(0.0, 0.0)
     var end = Point(0.0, 0.0)
-    for (i in 0 until points.size) for (k in i + 1 until points.size)
-        if (points[i].distance(points[k]) > begin.distance(end)) {
-            end = points[k]
-            begin = points[i]
-        }
+    for (i in 0 until points.size)
+        for (k in i + 1 until points.size)
+            if (points[i].distance(points[k]) > begin.distance(end)) {
+                end = points[k]
+                begin = points[i]
+            }
     return Segment(begin, end)
 }
 
@@ -133,7 +135,7 @@ class Line private constructor(val b: Double, val angle: Double) {
         require(angle >= 0 && angle < PI) { "Incorrect line angle: $angle" }
     }
 
-    constructor(point: Point, angle: Double): this(point.y * cos(angle) - point.x * sin(angle), angle)
+    constructor(point: Point, angle: Double) : this(point.y * cos(angle) - point.x * sin(angle), angle)
 
     /**
      * Средняя
@@ -197,11 +199,12 @@ fun findNearestCirclePair(vararg circles: Circle): Pair<Circle, Circle> {
     if (circles.size < 2) throw IllegalArgumentException()
     var minDistance = circles[0].distance(circles[1])
     var res = Pair(circles[0], circles[1])
-    for (i in 0 until circles.size) for (k in i + 1 until circles.size)
-        if (circles[i].distance(circles[k]) < minDistance) {
-            minDistance = circles[i].distance(circles[k])
-            res = Pair(circles[i], circles[k])
-        }
+    for (i in 0 until circles.size)
+        for (k in i + 1 until circles.size)
+            if (circles[i].distance(circles[k]) < minDistance) {
+                minDistance = circles[i].distance(circles[k])
+                res = Pair(circles[i], circles[k])
+            }
     return res
 }
 

@@ -174,16 +174,17 @@ fun alignFileByWidth(inputName: String, outputName: String) {
     for (line in File(inputName).readLines().map { it.trim() }) {
         val words = Regex("""\s+""").split(line)
         val lastIndex = words.lastIndex
-        if (lastIndex < 1 ||
-                words.joinToString(" ").length == longestLineLength)
+        if (lastIndex < 1 || words.joinToString(" ").length == longestLineLength)
             outputStream.write(line)
         else {
             val space = longestLineLength - words.joinToString("").length
             val everySpace = space / lastIndex
             val rest = space % lastIndex
             for ((index, word) in words.withIndex())
-                outputStream
-                        .write(word + if (index != lastIndex) " ".repeat(everySpace + if (index < rest) 1 else 0)
+                outputStream.write(word +
+                        if (index != lastIndex) " ".repeat(everySpace +
+                                if (index < rest) 1
+                                else 0)
                         else "")
         }
         outputStream.newLine()
@@ -219,7 +220,7 @@ fun top20Words(inputName: String): Map<String, Int> {
         for (word in uniqueWord) pres[word] = words.count { currentWord -> currentWord == word }
         for ((key, value) in pres) res[key] = (res[key] ?: 0) + value
     }
-    return res.toList().sortedByDescending { it.second }.take(n = 20).toMap()
+    return res.toList().sortedByDescending { it.second }.take(20).toMap()
 }
 
 /**
@@ -260,10 +261,11 @@ fun top20Words(inputName: String): Map<String, Int> {
 fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: String) {
     val read = File(inputName).reader()
     val fullDictionary = mutableMapOf<Char, String>()
-    for (it in dictionary.keys) {
-        fullDictionary[it.toLowerCase()] = (fullDictionary[it.toLowerCase()] ?: "") + dictionary[it]!!.toLowerCase()
-        if (it.toLowerCase() != it.toUpperCase()) fullDictionary[it.toUpperCase()] =
-                (fullDictionary[it.toUpperCase()] ?: "") + dictionary[it]!!.toLowerCase().capitalize()
+    for ((key, value) in dictionary) {
+        val fromFullDict = fullDictionary[key.toLowerCase()] ?: ""
+        fullDictionary[key.toLowerCase()] = fromFullDict + value.toLowerCase()
+        if (value.toLowerCase() != value.toUpperCase())
+            fullDictionary[key.toUpperCase()] = fromFullDict + value.toLowerCase().capitalize()
     }
     val outputStream = File(outputName).bufferedWriter()
     var charInt = read.read()
