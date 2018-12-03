@@ -262,10 +262,10 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
     val read = File(inputName).reader()
     val fullDictionary = mutableMapOf<Char, String>()
     for ((key, value) in dictionary) {
-        val fromFullDict = fullDictionary[key.toLowerCase()] ?: ""
-        fullDictionary[key.toLowerCase()] = fromFullDict + value.toLowerCase()
-        if (value.toLowerCase() != value.toUpperCase())
-            fullDictionary[key.toUpperCase()] = fromFullDict + value.toLowerCase().capitalize()
+        fullDictionary[key.toLowerCase()] = (fullDictionary[key.toLowerCase()] ?: "") + value.toLowerCase()
+        if (key.toLowerCase() != key.toUpperCase()) fullDictionary[key.toUpperCase()] =
+                (fullDictionary[key.toUpperCase()] ?: "") + value.toLowerCase().capitalize()
+
     }
     val outputStream = File(outputName).bufferedWriter()
     var charInt = read.read()
@@ -277,6 +277,9 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
     outputStream.close()
 }
 
+fun main(args: Array<String>) {
+    transliterate("input/text.txt", mapOf('' to "&]BW\"ATFu0", 'f' to "F\t(L!L*BT\\", '쑕' to "", '!' to "ry6bsHEt", '?' to "6*Vw5G9=q2", 'ᜑ' to "AvywW>[", '5' to "42,j+!tQ`=", '+' to "v:J9ez>.P^", '' to "W)6N\$BSxj", '(' to "B{S3", 'Z' to "f|>i;5s\nEy", '\"' to "2", 'N' to "^=uB5x`]'(", 'Ì' to "", 'Q' to "n", '2' to "@S74", 'W' to "G{8", 'a' to "3kHg?aB#X[", 'B' to "X\\-D#ai2&[", 'u' to "Gj \"P}+(iU", '=' to "", 'ᾔ' to "bTK6/(},[5", 'y' to "z= ^;v<%IF", '钋' to "", '~' to ""), "wow.txt")
+}
 /**
  * Средняя
  *
