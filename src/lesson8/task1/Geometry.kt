@@ -196,14 +196,15 @@ fun bisectorByPoints(a: Point, b: Point): Line {
  * Если в списке менее двух окружностей, бросить IllegalArgumentException
  */
 fun findNearestCirclePair(vararg circles: Circle): Pair<Circle, Circle> {
-    if (circles.size < 2) throw IllegalArgumentException()
-    var minDistance = circles[0].distance(circles[1])
-    var res = Pair(circles[0], circles[1])
-    for (i in 0 until circles.size)
-        for (k in i + 1 until circles.size)
-            if (circles[i].distance(circles[k]) < minDistance) {
-                minDistance = circles[i].distance(circles[k])
-                res = Pair(circles[i], circles[k])
+    val circleSet = circles.toSet().toList()
+    if (circleSet.size < 2) throw IllegalArgumentException()
+    var minDistance = circleSet[0].distance(circleSet[1])
+    var res = Pair(circleSet[0], circleSet[1])
+    for (i in 0 until circleSet.size)
+        for (k in i + 1 until circleSet.size)
+            if (circleSet[i].distance(circleSet[k]) < minDistance) {
+                minDistance = circleSet[i].distance(circleSet[k])
+                res = Pair(circleSet[i], circleSet[k])
             }
     return res
 }
