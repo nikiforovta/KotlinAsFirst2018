@@ -181,9 +181,7 @@ fun alignFileByWidth(inputName: String, outputName: String) {
             val everySpace = space / lastIndex
             val rest = space % lastIndex
             for ((index, word) in words.withIndex())
-                outputStream.write(word +
-                        if (index != lastIndex) " ".repeat(everySpace + if (index < rest) 1 else 0)
-                        else "")
+                outputStream.write(word + if (index != lastIndex) " ".repeat(everySpace + if (index < rest) 1 else 0) else "")
         }
         outputStream.newLine()
     }
